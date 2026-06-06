@@ -90,7 +90,7 @@ export function Lobby({ roomId, myId, state, onJoined }: LobbyProps) {
           {players.map((p, i) => (
             <li key={p.id} className="flex items-center gap-2 text-sm">
               <span className={`h-2 w-2 rounded-full ${teamStyle(i % 2, mySlotTeam).dot}`} />
-              {p.name} {p.isHost && "♛"} {p.id === myId && <span className="text-zinc-500">(you)</span>}
+              {p.name} {p.isHost && "👑"} {p.id === myId && <span className="text-zinc-500">(you)</span>}
             </li>
           ))}
           {Array.from({ length: Math.max(0, 6 - players.length) }).map((_, i) => (
