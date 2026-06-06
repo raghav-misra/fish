@@ -1,12 +1,21 @@
 import { nanoid } from "nanoid";
 import {
   type Card,
+  type GameSummary,
   type HalfSuitId,
   type PendingAction,
   type Player,
   type PublicGameState,
   type RoomSummary,
 } from "@fish/shared";
+
+/** One committed call, kept for end-of-game superlatives. */
+export interface CallRecord {
+  callerId: string;
+  callerTeam: number;
+  winningTeam: number;
+  success: boolean;
+}
 
 export interface Room {
   id: string;
@@ -21,6 +30,12 @@ export interface Room {
   winner: number | null;
   /** In-flight ask/call being narrated to the room, or null when idle. */
   pendingAction: PendingAction | null;
+  /** Every committed call this game, feeding the end-screen awards. */
+  calls: CallRecord[];
+  /** Per-player tally of cards held in half suits at the moment they were claimed. */
+  hoard: Map<string, number>;
+  /** Superlatives, computed once when the game finishes. */
+  summary: GameSummary | null;
   createdAt: number;
 }
 
@@ -49,6 +64,9 @@ export class RoomManager {
       claims: new Map(),
       winner: null,
       pendingAction: null,
+      calls: [],
+      hoard: new Map(),
+      summary: null,
       createdAt: Date.now(),
     };
     const player = this.addPlayer(room, host.playerName, true);
@@ -100,6 +118,7 @@ export class RoomManager {
       handCounts,
       claims,
       winner: room.winner,
+      summary: room.summary,
     };
   }
 

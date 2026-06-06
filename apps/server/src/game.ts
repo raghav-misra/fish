@@ -1,6 +1,8 @@
 import {
   type Card,
   type GameLogEntry,
+  type GameSummary,
+  type Award,
   type HalfSuitId,
   type CardPlacement,
   HALF_SUIT_COUNT,
@@ -97,6 +99,9 @@ export function startGame(room: Room): EngineResult {
 
   room.claims = new Map();
   room.winner = null;
+  room.calls = [];
+  room.hoard = new Map();
+  room.summary = null;
   room.phase = "playing";
   room.currentTurn = ids[Math.floor(Math.random() * ids.length)];
 
@@ -228,6 +233,13 @@ export function applyCall(
 
   room.claims.set(halfSuit, winningTeam);
 
+  // Credit each holder of this half suit before the cards leave their hands.
+  for (const [pid, hand] of room.hands) {
+    const held = hand.filter((c) => halfSuitOf(c) === halfSuit).length;
+    if (held > 0) room.hoard.set(pid, (room.hoard.get(pid) ?? 0) + held);
+  }
+  room.calls.push({ callerId, callerTeam, winningTeam, success: correct });
+
   for (const [pid, hand] of room.hands) {
     room.hands.set(
       pid,
@@ -249,6 +261,7 @@ export function applyCall(
     room.phase = "finished";
     room.winner = counts[0] > counts[1] ? 0 : 1;
     room.currentTurn = null;
+    room.summary = computeSummary(room, room.winner);
   }
 
   return {
@@ -278,6 +291,46 @@ function resolveTurnAfterCall(room: Room, preTurn: string | null): string | null
 
 function memberKey(card: Card): string {
   return card.kind === "joker" ? `joker-${card.color}` : `${card.rank}-${card.suit}`;
+}
+
+/**
+ * End-of-game superlatives:
+ *  - bestCaller: winning-team player with the most calls (only if a clear lead).
+ *  - saboteur: opponent whose failed calls gifted the winners the most sets.
+ *  - hoarder: whoever held the most cards across all claimed half suits.
+ */
+function computeSummary(room: Room, winner: number): GameSummary {
+  const callsByWinner = new Map<string, number>();
+  const sabotage = new Map<string, number>();
+  for (const c of room.calls) {
+    if (c.callerTeam === winner) {
+      callsByWinner.set(c.callerId, (callsByWinner.get(c.callerId) ?? 0) + 1);
+    } else if (!c.success && c.winningTeam === winner) {
+      sabotage.set(c.callerId, (sabotage.get(c.callerId) ?? 0) + 1);
+    }
+  }
+  return {
+    bestCaller: topAward(callsByWinner, true),
+    saboteur: topAward(sabotage, false),
+    hoarder: topAward(room.hoard, false),
+  };
+}
+
+/** Highest-tallied player as an Award, or null. With `requireClear`, ties yield null. */
+function topAward(tally: Map<string, number>, requireClear: boolean): Award | null {
+  let best: Award | null = null;
+  let tied = false;
+  for (const [playerId, value] of tally) {
+    if (value <= 0) continue;
+    if (!best || value > best.value) {
+      best = { playerId, value };
+      tied = false;
+    } else if (value === best.value) {
+      tied = true;
+    }
+  }
+  if (!best || (requireClear && tied)) return null;
+  return best;
 }
 
 function pickRandom<T>(arr: T[]): T {

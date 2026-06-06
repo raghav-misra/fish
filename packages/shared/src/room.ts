@@ -14,6 +14,21 @@ export const PlayerSchema = z.object({
 export type Player = z.infer<typeof PlayerSchema>;
 
 
+/** A superlative handed out on the end screen: a player plus the tally behind it. */
+export const AwardSchema = z.object({
+  playerId: z.string(),
+  value: z.number().int(),
+});
+export type Award = z.infer<typeof AwardSchema>;
+
+/** End-of-game superlatives. Each award is null when nobody clearly earns it. */
+export const GameSummarySchema = z.object({
+  bestCaller: AwardSchema.nullable(),
+  saboteur: AwardSchema.nullable(),
+  hoarder: AwardSchema.nullable(),
+});
+export type GameSummary = z.infer<typeof GameSummarySchema>;
+
 export const PublicGameStateSchema = z.object({
   phase: RoomPhaseSchema,
   players: z.array(PlayerSchema),
@@ -23,6 +38,8 @@ export const PublicGameStateSchema = z.object({
   claims: z.record(z.string(), z.number().int()),
   /** Winning team once the game is finished, else null. */
   winner: z.number().int().nullable(),
+  /** Superlatives, populated once the game is finished. */
+  summary: GameSummarySchema.nullable(),
 });
 export type PublicGameState = z.infer<typeof PublicGameStateSchema>;
 

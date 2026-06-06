@@ -11,6 +11,7 @@ import { StatusBar } from "./StatusBar.js";
 import { AskModal } from "./AskModal.js";
 import { CallModal } from "./CallModal.js";
 import { ActionOverlay } from "./ActionOverlay.js";
+import { GameOverOverlay } from "./GameOverOverlay.js";
 
 interface TableProps {
   state: PublicGameState;
@@ -139,6 +140,10 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
             myId={myId}
             roomId={roomId}
           />
+        )}
+
+        {state.phase === "finished" && !pendingAction && (
+          <GameOverOverlay state={state} />
         )}
       </div>
     </LayoutGroup>

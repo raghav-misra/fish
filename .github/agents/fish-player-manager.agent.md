@@ -57,6 +57,7 @@ Notes:
 - Player ids are the long ids in the snapshot (`players[].id`), not names.
 - `ask` and `call` run the **same staged suspense reveal a human triggers** in the UI (announce → reveal/place → ~1–2s suspense → result → clear). The command therefore takes **a few seconds** to return (a call longer than an ask, since each of the 6 cards is placed in turn) and only resolves once the on-screen animation has finished. This is expected — do not treat the delay as a hang, and don't fire the next move until the current command returns (the room is locked mid-action and a concurrent move returns a `BUSY` error).
 - If the server isn't on `http://localhost:3000`, set `FISH_SERVER_URL`. If `ADMIN_TOKEN` was set on the server, set the same value in your environment.
+- Give the bots funny names.
 
 ## Working with a human player
 
