@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { PublicGameState, PrivateHand } from "@fish/shared";
+import type { Card, GameLogEntry, PublicGameState, PrivateHand } from "@fish/shared";
 import { socket } from "./socket.js";
 
 interface GameStore {
@@ -8,9 +8,13 @@ interface GameStore {
   playerId: string | null;
   state: PublicGameState | null;
   hand: PrivateHand | null;
+  /** Most-recent-first activity feed. */
+  log: GameLogEntry[];
   error: string | null;
 
   setSession: (roomId: string, playerId: string) => void;
+  setHandOrder: (cards: Card[]) => void;
+  clearError: () => void;
   reset: () => void;
 }
 
@@ -20,10 +24,13 @@ export const useGameStore = create<GameStore>((set) => ({
   playerId: null,
   state: null,
   hand: null,
+  log: [],
   error: null,
 
   setSession: (roomId, playerId) => set({ roomId, playerId }),
-  reset: () => set({ roomId: null, playerId: null, state: null, hand: null }),
+  setHandOrder: (cards) => set({ hand: { cards } }),
+  clearError: () => set({ error: null }),
+  reset: () => set({ roomId: null, playerId: null, state: null, hand: null, log: [] }),
 }));
 
 /** Wire Socket.IO lifecycle + server events into the store. Call once at startup. */
@@ -32,6 +39,9 @@ export function bindSocket() {
   socket.on("disconnect", () => useGameStore.setState({ connected: false }));
   socket.on("game:state", (state) => useGameStore.setState({ state }));
   socket.on("game:hand", (hand) => useGameStore.setState({ hand }));
+  socket.on("game:log", (entry) =>
+    useGameStore.setState((s) => ({ log: [entry, ...s.log].slice(0, 50) })),
+  );
   socket.on("server:error", (error) =>
     useGameStore.setState({ error: error.message }),
   );
