@@ -25,7 +25,6 @@ export type EngineResult =
   | { ok: false; code: string; message: string };
 
 const PLAYER_COUNT = 6;
-const HAND_SIZE = 9;
 
 /** Deal 9 cards each, assign teams, pick a random starter, begin play. */
 export function startGame(room: Room): EngineResult {
@@ -49,8 +48,6 @@ export function startGame(room: Room): EngineResult {
   deck.forEach((card, i) => {
     room.hands.get(ids[i % PLAYER_COUNT])!.push(card);
   });
-  // Sanity: 54 cards / 6 players = 9 each.
-  void HAND_SIZE;
 
   room.claims = new Map();
   room.winner = null;
@@ -183,20 +180,19 @@ export function applyCall(
   const winningTeam = correct ? callerTeam : opposingTeam;
   const preTurn = room.currentTurn;
 
-  // Remove every card of this half suit from circulation, wherever it sits.
+  room.claims.set(halfSuit, winningTeam);
+
   for (const [pid, hand] of room.hands) {
     room.hands.set(
       pid,
       hand.filter((c) => halfSuitOf(c) !== halfSuit),
     );
   }
-  room.claims.set(halfSuit, winningTeam);
 
   // Calling runs async of turns: the turn returns to whoever held it. But if
   // that player was emptied by this call, hand off to a random teammate.
   room.currentTurn = resolveTurnAfterCall(room, preTurn);
 
-  // Win check: first to the majority, or all half suits exhausted.
   const counts = [0, 0];
   for (const team of room.claims.values()) counts[team] += 1;
   if (
@@ -217,7 +213,6 @@ export function applyCall(
   };
 }
 
-/** Turn-holder kept their seat unless the call emptied their hand. */
 function resolveTurnAfterCall(room: Room, preTurn: string | null): string | null {
   const hasCards = (id: string) => (room.hands.get(id)?.length ?? 0) > 0;
   if (preTurn && hasCards(preTurn)) return preTurn;

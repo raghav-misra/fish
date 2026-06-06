@@ -7,7 +7,6 @@ import {
   type RoomSummary,
 } from "@fish/shared";
 
-/** Server-side room record. Holds both public state and private hands. */
 export interface Room {
   id: string;
   phase: PublicGameState["phase"];

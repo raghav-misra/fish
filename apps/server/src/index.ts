@@ -22,7 +22,6 @@ const fastify = Fastify({ logger: true });
 
 await fastify.register(cors, { origin: config.corsOrigins });
 
-// Health check (Caddy / load balancer / uptime probe).
 fastify.get("/health", async () => ({ status: "ok" }));
 
 // Socket.IO shares Fastify's underlying HTTP server.
@@ -37,7 +36,6 @@ const io = new SocketIOServer<
 
 const rooms = new RoomManager();
 
-/** Push the public state to a whole room, and each private hand to its owner. */
 function broadcastRoom(room: Room) {
   io.to(room.id).emit("game:state", rooms.toPublicState(room));
   for (const [playerId, cards] of room.hands) {
@@ -45,7 +43,6 @@ function broadcastRoom(room: Room) {
   }
 }
 
-/** Fan out the activity-log entries produced by an engine action. */
 function emitLogs(room: Room, logs: GameLogEntry[]) {
   for (const entry of logs) io.to(room.id).emit("game:log", entry);
 }
@@ -85,7 +82,6 @@ io.on("connection", (socket) => {
     broadcastRoom(room);
   });
 
-  // Reconnect after a dropped connection (network blip / long session).
   socket.on("room:resume", (raw, ack) => {
     const parsed = ResumePayloadSchema.safeParse(raw);
     if (!parsed.success) {

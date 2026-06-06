@@ -36,7 +36,6 @@ export const HalfSuitIdSchema = z.enum(
 export const HALF_SUIT_COUNT = 9;
 export const MAJORITY = 5;
 
-/** Which half suit a given card belongs to. */
 export function halfSuitOf(card: Card): HalfSuitId {
   if (card.kind === "joker") return "special";
   if (card.rank === "7") return "special";
@@ -44,7 +43,6 @@ export function halfSuitOf(card: Card): HalfSuitId {
   return `${card.suit}-${isLow ? "low" : "high"}` as HalfSuitId;
 }
 
-/** The exact 6 cards that make up a half suit. */
 export function halfSuitMembers(id: HalfSuitId): Card[] {
   if (id === "special") {
     return [
@@ -58,7 +56,6 @@ export function halfSuitMembers(id: HalfSuitId): Card[] {
   return ranks.map((rank): Card => ({ kind: "standard", suit, rank }));
 }
 
-/** Human-readable label for UI. */
 export function halfSuitLabel(id: HalfSuitId): string {
   if (id === "special") return "7s + Jokers";
   const [suit, half] = id.split("-");
@@ -66,7 +63,6 @@ export function halfSuitLabel(id: HalfSuitId): string {
   return `${half === "low" ? "Low" : "High"} ${suitName}`;
 }
 
-/** Structural equality for cards (handles both jokers and standard cards). */
 export function cardsEqual(a: Card, b: Card): boolean {
   if (a.kind !== b.kind) return false;
   if (a.kind === "joker" && b.kind === "joker") return a.color === b.color;

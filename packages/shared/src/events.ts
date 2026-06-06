@@ -33,7 +33,6 @@ export const ResumePayloadSchema = z.object({
 });
 export type ResumePayload = z.infer<typeof ResumePayloadSchema>;
 
-/** Ask an opponent for a specific card. */
 export const AskPayloadSchema = z.object({
   roomId: z.string().min(1),
   targetId: z.string().min(1),

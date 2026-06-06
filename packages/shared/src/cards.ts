@@ -24,20 +24,17 @@ export const SuitSchema = z.enum(SUITS);
 export const RankSchema = z.enum(RANKS);
 export const JokerColorSchema = z.enum(JOKER_COLORS);
 
-/** A standard suited card. */
 export const StandardCardSchema = z.object({
   kind: z.literal("standard"),
   suit: SuitSchema,
   rank: RankSchema,
 });
 
-/** One of the two jokers. */
 export const JokerCardSchema = z.object({
   kind: z.literal("joker"),
   color: JokerColorSchema,
 });
 
-/** A card is either a standard suited card or a joker. */
 export const CardSchema = z.discriminatedUnion("kind", [
   StandardCardSchema,
   JokerCardSchema,
@@ -56,7 +53,6 @@ export function cardId(card: Card): string {
     : `${card.rank}-${card.suit}`;
 }
 
-/** A fresh 54-card deck: 52 standard cards + 2 jokers. */
 export function freshDeck(): Card[] {
   const deck: Card[] = [];
   for (const suit of SUITS) {
