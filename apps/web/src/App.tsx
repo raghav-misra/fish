@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { useGameStore } from "./store.js";
-import { emitWithAck } from "./socket.js";
+import { socket, emitWithAck } from "./socket.js";
 import type { RoomJoined } from "@fish/shared";
+
+function emitStart(roomId: string) {
+  socket.emit("game:start", { roomId });
+}
 
 export default function App() {
   const { connected, roomId, playerId, state, hand, error } = useGameStore();
@@ -39,7 +43,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex">
-      {/* Game area */}
       <main className="flex-1 p-8">
         <header className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold tracking-tight">🐟 Fish</h1>
@@ -129,7 +132,6 @@ export default function App() {
         )}
       </main>
 
-      {/* Video/voice side panel — wired to LiveKit/Daily later. */}
       <aside className="w-72 bg-slate-950 border-l border-slate-800 p-4">
         <h2 className="text-sm font-semibold text-slate-400 mb-3">Video chat</h2>
         <div className="space-y-2">
@@ -145,9 +147,4 @@ export default function App() {
       </aside>
     </div>
   );
-}
-
-import { socket } from "./socket.js";
-function emitStart(roomId: string) {
-  socket.emit("game:start", { roomId });
 }

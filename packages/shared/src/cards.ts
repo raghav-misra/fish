@@ -1,9 +1,5 @@
 import { z } from "zod";
 
-/**
- * Standard playing-card model.
- * Fish is typically played without jokers, but we keep the model generic.
- */
 export const SUITS = ["clubs", "diamonds", "hearts", "spades"] as const;
 export const RANKS = [
   "2",
@@ -33,12 +29,10 @@ export type Suit = z.infer<typeof SuitSchema>;
 export type Rank = z.infer<typeof RankSchema>;
 export type Card = z.infer<typeof CardSchema>;
 
-/** Stable id for a card, handy for React keys and animations. */
 export function cardId(card: Card): string {
   return `${card.rank}-${card.suit}`;
 }
 
-/** A fresh, ordered 52-card deck. */
 export function freshDeck(): Card[] {
   const deck: Card[] = [];
   for (const suit of SUITS) {

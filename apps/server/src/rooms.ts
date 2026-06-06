@@ -4,7 +4,6 @@ import {
   type Player,
   type PublicGameState,
   type RoomSummary,
-  freshDeck,
 } from "@fish/shared";
 
 /** Server-side room record. Holds both public state and private hands. */
@@ -19,16 +18,12 @@ export interface Room {
 }
 
 /**
- * In-memory room store.
- *
- * For v1 this lives in a single Node process (one Compute Engine VM).
- * To scale horizontally later, back this with Redis and use the
- * Socket.IO Redis adapter.
+ * In-memory room store. Backed by a single Node process for now;
+ * swap for Redis + the Socket.IO Redis adapter to scale horizontally.
  */
 export class RoomManager {
   private rooms = new Map<string, Room>();
 
-  /** Short, human-friendly room codes (e.g. for sharing). */
   private newRoomId(): string {
     let id: string;
     do {
@@ -82,13 +77,8 @@ export class RoomManager {
     if (player) player.connected = connected;
   }
 
-  /**
-   * Deal placeholder — the real Fish deal/logic goes here once rules are set.
-   * Currently just shuffles a deck and clears hands to prove the plumbing.
-   */
   startGame(room: Room): void {
-    const deck = shuffle(freshDeck());
-    void deck; // TODO: deal according to Fish rules
+    // TODO: deal according to Fish rules.
     room.phase = "playing";
     const first = [...room.players.keys()][0] ?? null;
     room.currentTurn = first;
@@ -113,13 +103,4 @@ export class RoomManager {
       phase: r.phase,
     }));
   }
-}
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
 }

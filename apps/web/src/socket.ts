@@ -6,13 +6,6 @@ import type {
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL ?? "http://localhost:3000";
 
-/**
- * Single typed Socket.IO client for the whole app.
- *
- * `reconnection` is on by default; combined with the server's `room:resume`
- * handler this recovers a session after a dropped connection (important
- * because cloud proxies cap connection lifetimes).
- */
 export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
   SERVER_URL,
   {
@@ -21,7 +14,6 @@ export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
   },
 );
 
-/** Promise wrapper around Socket.IO's ack callback. */
 export function emitWithAck<TData>(
   event: keyof ClientToServerEvents,
   payload: unknown,
