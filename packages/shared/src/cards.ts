@@ -53,6 +53,26 @@ export function cardId(card: Card): string {
     : `${card.rank}-${card.suit}`;
 }
 
+/**
+ * Parse a card id string (the inverse of {@link cardId}) into a Card.
+ * Accepts `joker-red` / `joker-black` or `<rank>-<suit>` (e.g. `A-spades`,
+ * `10-hearts`). Returns null for anything that isn't a real card.
+ */
+export function parseCard(id: string): Card | null {
+  const dash = id.indexOf("-");
+  if (dash < 0) return null;
+  const head = id.slice(0, dash);
+  const tail = id.slice(dash + 1);
+  if (head === "joker") {
+    return tail === "red" || tail === "black"
+      ? { kind: "joker", color: tail }
+      : null;
+  }
+  if (!(RANKS as readonly string[]).includes(head)) return null;
+  if (!(SUITS as readonly string[]).includes(tail)) return null;
+  return { kind: "standard", rank: head as Rank, suit: tail as Suit };
+}
+
 export function freshDeck(): Card[] {
   const deck: Card[] = [];
   for (const suit of SUITS) {

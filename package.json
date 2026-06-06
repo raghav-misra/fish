@@ -13,6 +13,7 @@
     "dev:web": "pnpm --filter @fish/web dev",
     "dev:server": "pnpm --filter @fish/server dev",
     "build:shared": "pnpm --filter @fish/shared build",
+    "admin": "pnpm --filter @fish/server admin",
     "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {

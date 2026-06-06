@@ -6,6 +6,10 @@ import {
   type ServerToClientEvents,
   type SocketData,
   type GameLogEntry,
+  type Card,
+  type CardPlacement,
+  type HalfSuitId,
+  type PendingAction,
   CreateRoomPayloadSchema,
   JoinRoomPayloadSchema,
   LeaveRoomPayloadSchema,
@@ -27,6 +31,7 @@ import {
   canBeginAsk,
   canBeginCall,
 } from "./game.js";
+import { registerAdminRoutes } from "./admin.js";
 
 const fastify = Fastify({ logger: true });
 
@@ -66,31 +71,142 @@ function alive(room: Room): boolean {
   return rooms.getRoom(room.id) === room;
 }
 
-/** Timings (ms) for the shared suspense reveal. */
+/** Timings (ms) for the shared suspense reveal, mirrored by socket + admin. */
+const CHOICE_MS = 900; // beat while the "player" picks a card / opens the call
+const PLACE_MS = 550; // beat between each placed card during a call
 const SUSPENSE_MS = 1300;
 const CLEAR_MS = 2400;
+
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 /**
  * After a commit, narrate the reveal: hold the card/placement in suspense,
  * then flip the result and only THEN release the updated game state (so hand
  * counts and turn changes don't leak the outcome early). Finally clear.
  */
-function revealAndClear(room: Room, success: boolean, logs: GameLogEntry[]) {
+async function revealAndClear(room: Room, success: boolean, logs: GameLogEntry[]): Promise<void> {
   const pending = room.pendingAction;
   if (!pending) return;
-  setTimeout(() => {
-    if (!alive(room) || room.pendingAction !== pending) return;
-    pending.result = success ? "success" : "fail";
-    broadcastAction(room);
-    broadcastRoom(room);
-    emitLogs(room, logs);
-    setTimeout(() => {
-      if (!alive(room) || room.pendingAction !== pending) return;
-      room.pendingAction = null;
-      broadcastAction(room);
-    }, CLEAR_MS);
-  }, SUSPENSE_MS);
+  await sleep(SUSPENSE_MS);
+  if (!alive(room) || room.pendingAction !== pending) return;
+  pending.result = success ? "success" : "fail";
+  broadcastAction(room);
+  broadcastRoom(room);
+  emitLogs(room, logs);
+  await sleep(CLEAR_MS);
+  if (!alive(room) || room.pendingAction !== pending) return;
+  room.pendingAction = null;
+  broadcastAction(room);
 }
+
+/**
+ * Drive a full ASK through the same staged sequence a UI player produces:
+ * announce target → (beat) → reveal card → suspense → result → clear.
+ * Resolves once the action has fully cleared. Used by the admin/bot API so
+ * bot turns animate identically to human turns.
+ */
+async function stagedAsk(
+  room: Room,
+  askerId: string,
+  targetId: string,
+  card: Card,
+): Promise<{ ok: true; success: boolean } | { ok: false; code: string; message: string }> {
+  if (room.pendingAction) {
+    return { ok: false, code: "BUSY", message: "Another action is in progress" };
+  }
+  const check = canBeginAsk(room, askerId, targetId);
+  if (!check.ok) return { ok: false, code: check.code, message: check.message };
+
+  const pending: PendingAction = { kind: "ask", askerId, targetId, card: null, result: "pending" };
+  room.pendingAction = pending;
+  broadcastAction(room);
+  await sleep(CHOICE_MS);
+  if (!alive(room) || room.pendingAction !== pending) {
+    return { ok: false, code: "CANCELLED", message: "Action was interrupted" };
+  }
+
+  const result = applyAsk(room, askerId, targetId, card);
+  if (!result.ok) {
+    room.pendingAction = null;
+    broadcastAction(room);
+    return { ok: false, code: result.code, message: result.message };
+  }
+  const log = result.logs[0];
+  const success = log?.kind === "ask" ? log.success : false;
+  pending.card = card; // result stays "pending" until the reveal
+  broadcastAction(room);
+  await revealAndClear(room, success, result.logs);
+  return { ok: true, success };
+}
+
+/**
+ * Drive a full CALL through the staged sequence: announce the half suit →
+ * place each card one-by-one (live) → suspense → result → clear.
+ */
+async function stagedCall(
+  room: Room,
+  callerId: string,
+  halfSuit: HalfSuitId,
+  placement: CardPlacement[],
+): Promise<
+  | { ok: true; success: boolean; team: number | null }
+  | { ok: false; code: string; message: string }
+> {
+  if (room.pendingAction) {
+    return { ok: false, code: "BUSY", message: "Another action is in progress" };
+  }
+  const check = canBeginCall(room, callerId, halfSuit);
+  if (!check.ok) return { ok: false, code: check.code, message: check.message };
+
+  const pending: PendingAction = {
+    kind: "call",
+    callerId,
+    halfSuit,
+    placement: [],
+    committed: false,
+    result: "pending",
+  };
+  room.pendingAction = pending;
+  broadcastAction(room);
+  await sleep(CHOICE_MS);
+
+  // Reveal placements one at a time, as if the caller were assigning them.
+  for (let i = 0; i < placement.length; i++) {
+    if (!alive(room) || room.pendingAction !== pending) {
+      return { ok: false, code: "CANCELLED", message: "Action was interrupted" };
+    }
+    pending.placement = placement.slice(0, i + 1);
+    broadcastAction(room);
+    await sleep(PLACE_MS);
+  }
+
+  const result = applyCall(room, callerId, halfSuit, placement);
+  if (!result.ok) {
+    room.pendingAction = null;
+    broadcastAction(room);
+    return { ok: false, code: result.code, message: result.message };
+  }
+  const log = result.logs[0];
+  const success = log?.kind === "call" ? log.success : false;
+  const team = log?.kind === "call" ? log.team : null;
+  pending.placement = placement;
+  pending.committed = true; // result stays "pending" until the reveal
+  broadcastAction(room);
+  await revealAndClear(room, success, result.logs);
+  return { ok: true, success, team };
+}
+
+// Admin/testing API: server-authoritative shortcuts to fill rooms with bots,
+// inspect state, and play turns on their behalf. Bot asks/calls run through the
+// same staged reveal as humans. Guarded by an admin token.
+registerAdminRoutes(fastify, {
+  rooms,
+  adminToken: config.adminToken,
+  broadcastRoom,
+  emitLogs,
+  stagedAsk,
+  stagedCall,
+});
 
 io.on("connection", (socket) => {
   fastify.log.info({ id: socket.id }, "socket connected");
@@ -228,7 +344,7 @@ io.on("connection", (socket) => {
     pending.card = parsed.data.card; // result stays "pending" until the reveal
     ack({ ok: true, data: null });
     broadcastAction(room);
-    revealAndClear(room, success, result.logs);
+    void revealAndClear(room, success, result.logs);
   });
 
   socket.on("game:call:begin", (raw, ack) => {
@@ -310,7 +426,7 @@ io.on("connection", (socket) => {
     pending.committed = true; // result stays "pending" until the reveal
     ack({ ok: true, data: null });
     broadcastAction(room);
-    revealAndClear(room, success, result.logs);
+    void revealAndClear(room, success, result.logs);
   });
 
   socket.on("game:action:cancel", (raw) => {
