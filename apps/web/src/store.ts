@@ -6,7 +6,7 @@ import type {
   PublicGameState,
   PrivateHand,
 } from "@fish/shared";
-import { socket } from "./socket.js";
+import { socket, connectWithKey } from "./socket.js";
 
 interface GameStore {
   connected: boolean;
@@ -58,5 +58,8 @@ export function bindSocket() {
   socket.on("server:error", (error) =>
     useGameStore.setState({ error: error.message }),
   );
-  socket.connect();
+
+  // Connect with stored key (or empty if no gate configured).
+  const key = sessionStorage.getItem("fish-key") ?? "";
+  connectWithKey(key);
 }

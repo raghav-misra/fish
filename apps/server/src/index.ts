@@ -1,3 +1,4 @@
+import "dotenv/config";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { Server as SocketIOServer } from "socket.io";
@@ -39,6 +40,14 @@ await fastify.register(cors, { origin: config.corsOrigins });
 
 fastify.get("/health", async () => ({ status: "ok" }));
 
+fastify.post("/validate", async (req, reply) => {
+  const { key } = req.body as { key?: string };
+  if (!config.gameKey) return { ok: true };
+  if (key === config.gameKey) return { ok: true };
+  reply.status(401);
+  return { ok: false, error: "INVALID_KEY" };
+});
+
 // Socket.IO shares Fastify's underlying HTTP server.
 const io = new SocketIOServer<
   ClientToServerEvents,
@@ -50,6 +59,15 @@ const io = new SocketIOServer<
 });
 
 const rooms = new RoomManager();
+
+// Gate: reject connections without a valid game key (when configured).
+if (config.gameKey) {
+  io.use((socket, next) => {
+    const key = socket.handshake.auth?.key;
+    if (key === config.gameKey) return next();
+    next(new Error("INVALID_KEY"));
+  });
+}
 
 function broadcastRoom(room: Room) {
   io.to(room.id).emit("game:state", rooms.toPublicState(room));

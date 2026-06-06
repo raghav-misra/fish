@@ -14,6 +14,12 @@ export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
   },
 );
 
+/** Set the game key and (re)connect. */
+export function connectWithKey(key: string) {
+  socket.auth = { key };
+  socket.connect();
+}
+
 export function emitWithAck<TData>(
   event: keyof ClientToServerEvents,
   payload: unknown,

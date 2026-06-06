@@ -14,6 +14,7 @@
   "dependencies": {
     "@fastify/cors": "^10.0.1",
     "@fish/shared": "workspace:*",
+    "dotenv": "^17.4.2",
     "fastify": "^5.0.0",
     "nanoid": "^5.0.7",
     "socket.io": "^4.8.0",

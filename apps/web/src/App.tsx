@@ -1,12 +1,20 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { RoomJoined } from "@fish/shared";
 import { useGameStore } from "./store.js";
-import { emitWithAck } from "./socket.js";
+import { emitWithAck, connectWithKey } from "./socket.js";
 import { Lobby } from "./components/Lobby.js";
 import { Table } from "./components/Table.js";
+import { KeyGate } from "./components/KeyGate.js";
 
 export default function App() {
   const { connected, roomId, playerId, state, hand, error } = useGameStore();
+  const [gated, setGated] = useState(() => !sessionStorage.getItem("fish-key"));
+
+  function handleUnlock(key: string) {
+    sessionStorage.setItem("fish-key", key);
+    setGated(false);
+    connectWithKey(key);
+  }
 
   // Restore a previous session after a refresh / reconnect.
   useEffect(() => {
@@ -31,6 +39,10 @@ export default function App() {
   }
 
   const inGame = state && state.phase !== "lobby" && roomId && playerId;
+
+  if (gated) {
+    return <KeyGate onUnlock={handleUnlock} />;
+  }
 
   return (
     <>
