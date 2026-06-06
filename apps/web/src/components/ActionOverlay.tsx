@@ -117,7 +117,6 @@ function AskView({
     }
   }
 
-  // Resolved: success / fail reveal.
   if (action.result !== "pending" && action.card) {
     const success = action.result === "success";
     const { text, red } = cardFace(action.card);
@@ -240,7 +239,6 @@ function CallView({
   const [assign, setAssign] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
 
-  // Resolved.
   if (action.result !== "pending") {
     const success = action.result === "success";
     const winningTeam = success ? callerTeam : 1 - callerTeam;

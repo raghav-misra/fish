@@ -54,7 +54,6 @@ export function canBeginAsk(
   return { ok: true };
 }
 
-/** Validate that `callerId` may begin calling `halfSuit`. */
 export function canBeginCall(
   room: Room,
   callerId: string,

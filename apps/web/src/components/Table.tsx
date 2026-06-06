@@ -48,9 +48,7 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
         <StatusBar state={state} myId={myId} connected={connected} />
 
         <div className="flex flex-1 overflow-hidden">
-          {/* Table */}
           <div className="relative flex-1">
-            {/* Opponent / teammate seats around the circle */}
             {others.map((p, i) => {
               const pos = seatPosition(i + 1, 6);
               return (
@@ -68,12 +66,10 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
               );
             })}
 
-            {/* Center: claimed half suits */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
               <CenterClaims state={state} />
             </div>
 
-            {/* My label */}
             {me && (
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
                 <span
@@ -95,7 +91,6 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
           </div>
         </div>
 
-        {/* My hand + actions */}
         <div className="border-t border-slate-800 bg-slate-950/80 py-3">
           <div className="mb-2 flex items-center justify-center gap-2">
             <button

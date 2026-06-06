@@ -19,7 +19,6 @@ export default function App() {
     }
   }, []);
 
-  // Clear transient errors after a moment.
   useEffect(() => {
     if (!error) return;
     const t = setTimeout(() => useGameStore.getState().clearError(), 3500);

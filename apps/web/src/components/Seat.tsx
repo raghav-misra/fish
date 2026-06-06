@@ -6,7 +6,6 @@ interface SeatProps {
   player: Player;
   count: number;
   isTurn: boolean;
-  /** Highlight as a selectable ask target. */
   selectable?: boolean;
   onSelect?: () => void;
 }

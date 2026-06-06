@@ -57,7 +57,6 @@ function emitLogs(room: Room, logs: GameLogEntry[]) {
   for (const entry of logs) io.to(room.id).emit("game:log", entry);
 }
 
-/** Broadcast the current in-flight ask/call (or null when idle). */
 function broadcastAction(room: Room) {
   io.to(room.id).emit("game:action", room.pendingAction);
 }

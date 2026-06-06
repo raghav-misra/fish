@@ -76,7 +76,6 @@ export const CallCommitPayloadSchema = z.object({
 });
 export type CallCommitPayload = z.infer<typeof CallCommitPayloadSchema>;
 
-/** Initiator aborts an in-progress (not-yet-committed) action. */
 export const CancelActionPayloadSchema = z.object({
   roomId: z.string().min(1),
 });
@@ -126,7 +125,6 @@ export const ErrorMessageSchema = z.object({
 });
 export type ErrorMessage = z.infer<typeof ErrorMessageSchema>;
 
-/** Broadcast feed describing what just happened, for the UI activity log. */
 export const GameLogEntrySchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("ask"),

@@ -1,6 +1,5 @@
 import type { Card, Suit } from "@fish/shared";
 
-/** Suit glyphs and colors for rendering standard cards. */
 export const SUIT_GLYPH: Record<Suit, string> = {
   clubs: "♣",
   diamonds: "♦",
