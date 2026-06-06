@@ -2,6 +2,7 @@ import { nanoid } from "nanoid";
 import {
   type Card,
   type HalfSuitId,
+  type PendingAction,
   type Player,
   type PublicGameState,
   type RoomSummary,
@@ -18,6 +19,8 @@ export interface Room {
   claims: Map<HalfSuitId, number>;
   /** Winning team once finished, else null. */
   winner: number | null;
+  /** In-flight ask/call being narrated to the room, or null when idle. */
+  pendingAction: PendingAction | null;
   createdAt: number;
 }
 
@@ -45,6 +48,7 @@ export class RoomManager {
       currentTurn: null,
       claims: new Map(),
       winner: null,
+      pendingAction: null,
       createdAt: Date.now(),
     };
     const player = this.addPlayer(room, host.playerName, true);

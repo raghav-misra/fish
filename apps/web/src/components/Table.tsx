@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { LayoutGroup } from "framer-motion";
-import type { Card, PublicGameState } from "@fish/shared";
+import type { Card, GameLogEntry, PublicGameState } from "@fish/shared";
+import { halfSuitLabel } from "@fish/shared";
 import { useGameStore } from "../store.js";
-import { seatPosition, teamStyle } from "../lib/ui.js";
+import { cardFace, seatPosition, teamStyle } from "../lib/ui.js";
 import { Seat } from "./Seat.js";
 import { OwnHand } from "./OwnHand.js";
 import { CenterClaims } from "./CenterClaims.js";
 import { StatusBar } from "./StatusBar.js";
-import { ActivityLog } from "./ActivityLog.js";
 import { AskModal } from "./AskModal.js";
 import { CallModal } from "./CallModal.js";
+import { ActionOverlay } from "./ActionOverlay.js";
 
 interface TableProps {
   state: PublicGameState;
@@ -22,12 +23,17 @@ interface TableProps {
 /** The in-game table: 6 players in a circle, claims in the center, my hand below. */
 export function Table({ state, hand, myId, roomId, connected }: TableProps) {
   const log = useGameStore((s) => s.log);
+  const pendingAction = useGameStore((s) => s.pendingAction);
   const setHandOrder = useGameStore((s) => s.setHandOrder);
   const [modal, setModal] = useState<null | "ask" | "call">(null);
 
   const me = state.players.find((p) => p.id === myId) ?? null;
   const myTeam = me?.team ?? null;
   const myTurn = state.currentTurn === myId && state.phase === "playing";
+  const busy = pendingAction !== null;
+  const lastEvent = log[0]
+    ? describeEvent(log[0], (id) => state.players.find((p) => p.id === id)?.name ?? "Someone")
+    : null;
 
   // Rotate seat order so the local player sits at the bottom (index 0),
   // preserving the alternating-by-team order around the circle.
@@ -79,12 +85,14 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
                 </span>
               </div>
             )}
-          </div>
 
-          {/* Activity log */}
-          <aside className="w-64 border-l border-slate-800 bg-slate-950/60 p-3">
-            <ActivityLog log={log} players={state.players} />
-          </aside>
+            {/* Running history: only the most recent turn is visible. */}
+            <div className="absolute left-1/2 top-3 -translate-x-1/2">
+              <span className="rounded-full bg-slate-950/70 px-3 py-1 text-xs text-slate-400">
+                {lastEvent ?? "Game on — make your move."}
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* My hand + actions */}
@@ -92,14 +100,14 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
           <div className="mb-2 flex items-center justify-center gap-2">
             <button
               onClick={() => setModal("ask")}
-              disabled={!myTurn}
+              disabled={!myTurn || busy}
               className="rounded bg-emerald-600 px-4 py-1.5 text-sm font-medium disabled:opacity-40"
             >
               Ask
             </button>
             <button
               onClick={() => setModal("call")}
-              disabled={state.phase !== "playing"}
+              disabled={state.phase !== "playing" || busy}
               className="rounded bg-amber-600 px-4 py-1.5 text-sm font-medium disabled:opacity-40"
             >
               Call
@@ -115,7 +123,6 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
         {modal === "ask" && (
           <AskModal
             state={state}
-            hand={hand}
             myTeam={myTeam}
             roomId={roomId}
             onClose={() => setModal(null)}
@@ -124,12 +131,34 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
         {modal === "call" && (
           <CallModal
             state={state}
-            myTeam={myTeam}
             roomId={roomId}
             onClose={() => setModal(null)}
+          />
+        )}
+
+        {pendingAction && (
+          <ActionOverlay
+            action={pendingAction}
+            state={state}
+            hand={hand}
+            myId={myId}
+            roomId={roomId}
           />
         )}
       </div>
     </LayoutGroup>
   );
+}
+
+/** One-line summary of the most recent ask/call for the running history. */
+function describeEvent(entry: GameLogEntry, nameOf: (id: string) => string): string {
+  if (entry.kind === "ask") {
+    const { text } = cardFace(entry.card);
+    return entry.success
+      ? `${nameOf(entry.askerId)} took ${text} from ${nameOf(entry.targetId)}.`
+      : `${nameOf(entry.targetId)} had no ${text} for ${nameOf(entry.askerId)}.`;
+  }
+  return entry.success
+    ? `${nameOf(entry.callerId)} claimed ${halfSuitLabel(entry.halfSuit)} for Team ${entry.team + 1}.`
+    : `${nameOf(entry.callerId)} miscalled ${halfSuitLabel(entry.halfSuit)} — Team ${entry.team + 1} took it.`;
 }

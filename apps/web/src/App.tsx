@@ -48,7 +48,7 @@ export default function App() {
       )}
 
       {error && (
-        <div className="fixed bottom-4 left-1/2 z-[60] -translate-x-1/2 rounded-lg bg-rose-700 px-4 py-2 text-sm text-white shadow-lg">
+        <div className="fixed bottom-4 left-1/2 z-60 -translate-x-1/2 rounded-lg bg-rose-700 px-4 py-2 text-sm text-white shadow-lg">
           {error}
         </div>
       )}

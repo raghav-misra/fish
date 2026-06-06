@@ -12,10 +12,10 @@ export function isRedSuit(suit: Suit): boolean {
   return suit === "hearts" || suit === "diamonds";
 }
 
-/** Short label for a card face, e.g. "A♠" or "★ red". */
+/** Short label for a card face, e.g. "A\u2660" or "Joker". */
 export function cardFace(card: Card): { text: string; red: boolean } {
   if (card.kind === "joker") {
-    return { text: card.color === "red" ? "★" : "✦", red: card.color === "red" };
+    return { text: "Joker", red: card.color === "red" };
   }
   return { text: `${card.rank}${SUIT_GLYPH[card.suit]}`, red: isRedSuit(card.suit) };
 }

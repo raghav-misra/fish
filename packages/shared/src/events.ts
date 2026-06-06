@@ -33,13 +33,6 @@ export const ResumePayloadSchema = z.object({
 });
 export type ResumePayload = z.infer<typeof ResumePayloadSchema>;
 
-export const AskPayloadSchema = z.object({
-  roomId: z.string().min(1),
-  targetId: z.string().min(1),
-  card: CardSchema,
-});
-export type AskPayload = z.infer<typeof AskPayloadSchema>;
-
 /** Map a single half-suit card to the teammate claimed to hold it. */
 export const CardPlacementSchema = z.object({
   card: CardSchema,
@@ -47,13 +40,79 @@ export const CardPlacementSchema = z.object({
 });
 export type CardPlacement = z.infer<typeof CardPlacementSchema>;
 
-/** Call (claim) a half suit by stating exactly where all 6 of its cards sit. */
-export const CallPayloadSchema = z.object({
+/* --- Staged ask: pick a target, then (in the shared overlay) pick a card. --- */
+
+export const AskBeginPayloadSchema = z.object({
+  roomId: z.string().min(1),
+  targetId: z.string().min(1),
+});
+export type AskBeginPayload = z.infer<typeof AskBeginPayloadSchema>;
+
+export const AskCommitPayloadSchema = z.object({
+  roomId: z.string().min(1),
+  card: CardSchema,
+});
+export type AskCommitPayload = z.infer<typeof AskCommitPayloadSchema>;
+
+/* --- Staged call: announce a half suit, place cards live, then commit. --- */
+
+export const CallBeginPayloadSchema = z.object({
+  roomId: z.string().min(1),
+  halfSuit: HalfSuitIdSchema,
+});
+export type CallBeginPayload = z.infer<typeof CallBeginPayloadSchema>;
+
+/** Live, partial placement broadcast to everyone as the caller assigns cards. */
+export const CallProgressPayloadSchema = z.object({
+  roomId: z.string().min(1),
+  placement: z.array(CardPlacementSchema).max(6),
+});
+export type CallProgressPayload = z.infer<typeof CallProgressPayloadSchema>;
+
+export const CallCommitPayloadSchema = z.object({
   roomId: z.string().min(1),
   halfSuit: HalfSuitIdSchema,
   placement: z.array(CardPlacementSchema).length(6),
 });
-export type CallPayload = z.infer<typeof CallPayloadSchema>;
+export type CallCommitPayload = z.infer<typeof CallCommitPayloadSchema>;
+
+/** Initiator aborts an in-progress (not-yet-committed) action. */
+export const CancelActionPayloadSchema = z.object({
+  roomId: z.string().min(1),
+});
+export type CancelActionPayload = z.infer<typeof CancelActionPayloadSchema>;
+
+/* --- Pending action: the live, shared state of an in-flight ask/call. --- */
+
+export const ActionResultSchema = z.enum(["pending", "success", "fail"]);
+export type ActionResult = z.infer<typeof ActionResultSchema>;
+
+export const PendingAskSchema = z.object({
+  kind: z.literal("ask"),
+  askerId: z.string(),
+  targetId: z.string(),
+  /** Null while the asker is still choosing; set once revealed. */
+  card: CardSchema.nullable(),
+  result: ActionResultSchema,
+});
+export type PendingAsk = z.infer<typeof PendingAskSchema>;
+
+export const PendingCallSchema = z.object({
+  kind: z.literal("call"),
+  callerId: z.string(),
+  halfSuit: HalfSuitIdSchema,
+  /** Grows in real time as the caller assigns cards. */
+  placement: z.array(CardPlacementSchema),
+  committed: z.boolean(),
+  result: ActionResultSchema,
+});
+export type PendingCall = z.infer<typeof PendingCallSchema>;
+
+export const PendingActionSchema = z.discriminatedUnion("kind", [
+  PendingAskSchema,
+  PendingCallSchema,
+]);
+export type PendingAction = z.infer<typeof PendingActionSchema>;
 
 export const RoomJoinedSchema = z.object({
   roomId: z.string(),
@@ -96,8 +155,12 @@ export interface ClientToServerEvents {
   "room:leave": (payload: LeaveRoomPayload) => void;
   "room:resume": (payload: ResumePayload, ack: Ack<RoomJoined>) => void;
   "game:start": (payload: StartGamePayload) => void;
-  "game:ask": (payload: AskPayload, ack: Ack<null>) => void;
-  "game:call": (payload: CallPayload, ack: Ack<null>) => void;
+  "game:ask:begin": (payload: AskBeginPayload, ack: Ack<null>) => void;
+  "game:ask:commit": (payload: AskCommitPayload, ack: Ack<null>) => void;
+  "game:call:begin": (payload: CallBeginPayload, ack: Ack<null>) => void;
+  "game:call:progress": (payload: CallProgressPayload) => void;
+  "game:call:commit": (payload: CallCommitPayload, ack: Ack<null>) => void;
+  "game:action:cancel": (payload: CancelActionPayload) => void;
 }
 
 export interface ServerToClientEvents {
@@ -105,6 +168,7 @@ export interface ServerToClientEvents {
   "game:state": (state: z.infer<typeof PublicGameStateSchema>) => void;
   "game:hand": (hand: z.infer<typeof PrivateHandSchema>) => void;
   "game:log": (entry: GameLogEntry) => void;
+  "game:action": (action: PendingAction | null) => void;
   "server:error": (error: ErrorMessage) => void;
 }
 

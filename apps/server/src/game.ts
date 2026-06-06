@@ -24,7 +24,54 @@ export type EngineResult =
   | { ok: true; logs: GameLogEntry[] }
   | { ok: false; code: string; message: string };
 
+export type Check = { ok: true } | { ok: false; code: string; message: string };
+
 const PLAYER_COUNT = 6;
+
+/** Validate that `askerId` may begin asking `targetId` (before a card is chosen). */
+export function canBeginAsk(
+  room: Room,
+  askerId: string,
+  targetId: string,
+): Check {
+  if (room.phase !== "playing") {
+    return { ok: false, code: "NOT_PLAYING", message: "Game is not in progress" };
+  }
+  if (room.currentTurn !== askerId) {
+    return { ok: false, code: "NOT_YOUR_TURN", message: "It is not your turn" };
+  }
+  const asker = room.players.get(askerId);
+  const target = room.players.get(targetId);
+  if (!asker || !target) {
+    return { ok: false, code: "NOT_FOUND", message: "Player not found" };
+  }
+  if (asker.team === null || target.team === null || asker.team === target.team) {
+    return { ok: false, code: "OPPONENT_ONLY", message: "You must ask an opponent" };
+  }
+  if ((room.hands.get(targetId)?.length ?? 0) === 0) {
+    return { ok: false, code: "EMPTY_TARGET", message: "That player has no cards" };
+  }
+  return { ok: true };
+}
+
+/** Validate that `callerId` may begin calling `halfSuit`. */
+export function canBeginCall(
+  room: Room,
+  callerId: string,
+  halfSuit: HalfSuitId,
+): Check {
+  if (room.phase !== "playing") {
+    return { ok: false, code: "NOT_PLAYING", message: "Game is not in progress" };
+  }
+  const caller = room.players.get(callerId);
+  if (!caller || caller.team === null) {
+    return { ok: false, code: "NOT_FOUND", message: "Caller not found" };
+  }
+  if (room.claims.has(halfSuit)) {
+    return { ok: false, code: "OUT_OF_PLAY", message: "That half suit is already claimed" };
+  }
+  return { ok: true };
+}
 
 /** Deal 9 cards each, assign teams, pick a random starter, begin play. */
 export function startGame(room: Room): EngineResult {

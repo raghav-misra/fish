@@ -3,7 +3,7 @@
 # deploy/fish-server.service. The container is handy if you prefer Docker.)
 
 # ---- build stage ----
-FROM node:20-alpine AS build
+FROM node:24-alpine AS build
 WORKDIR /app
 
 RUN corepack enable
@@ -24,7 +24,7 @@ RUN pnpm --filter @fish/shared build && pnpm --filter @fish/server build
 RUN pnpm --filter @fish/server --prod deploy /app/out
 
 # ---- runtime stage ----
-FROM node:20-alpine
+FROM node:24-alpine
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /app/out ./

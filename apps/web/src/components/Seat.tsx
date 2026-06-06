@@ -37,7 +37,7 @@ export function Seat({ player, count, isTurn, selectable, onSelect }: SeatProps)
         {Array.from({ length: fan }).map((_, i) => (
           <div
             key={i}
-            className="-ml-3 first:ml-0 h-10 w-7 rounded bg-gradient-to-br from-indigo-600 to-indigo-800 border border-indigo-400/40 shadow"
+            className="-ml-3 first:ml-0 h-10 w-7 rounded bg-linear-to-br from-indigo-600 to-indigo-800 border border-indigo-400/40 shadow"
           />
         ))}
         {fan === 0 && <span className="text-xs text-slate-500 italic">empty</span>}

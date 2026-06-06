@@ -1,5 +1,11 @@
 import { create } from "zustand";
-import type { Card, GameLogEntry, PublicGameState, PrivateHand } from "@fish/shared";
+import type {
+  Card,
+  GameLogEntry,
+  PendingAction,
+  PublicGameState,
+  PrivateHand,
+} from "@fish/shared";
 import { socket } from "./socket.js";
 
 interface GameStore {
@@ -10,6 +16,8 @@ interface GameStore {
   hand: PrivateHand | null;
   /** Most-recent-first activity feed. */
   log: GameLogEntry[];
+  /** The live ask/call being narrated to the room, or null when idle. */
+  pendingAction: PendingAction | null;
   error: string | null;
 
   setSession: (roomId: string, playerId: string) => void;
@@ -25,12 +33,14 @@ export const useGameStore = create<GameStore>((set) => ({
   state: null,
   hand: null,
   log: [],
+  pendingAction: null,
   error: null,
 
   setSession: (roomId, playerId) => set({ roomId, playerId }),
   setHandOrder: (cards) => set({ hand: { cards } }),
   clearError: () => set({ error: null }),
-  reset: () => set({ roomId: null, playerId: null, state: null, hand: null, log: [] }),
+  reset: () =>
+    set({ roomId: null, playerId: null, state: null, hand: null, log: [], pendingAction: null }),
 }));
 
 /** Wire Socket.IO lifecycle + server events into the store. Call once at startup. */
@@ -41,6 +51,9 @@ export function bindSocket() {
   socket.on("game:hand", (hand) => useGameStore.setState({ hand }));
   socket.on("game:log", (entry) =>
     useGameStore.setState((s) => ({ log: [entry, ...s.log].slice(0, 50) })),
+  );
+  socket.on("game:action", (action) =>
+    useGameStore.setState({ pendingAction: action }),
   );
   socket.on("server:error", (error) =>
     useGameStore.setState({ error: error.message }),
