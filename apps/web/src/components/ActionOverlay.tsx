@@ -15,7 +15,7 @@ import {
   halfSuitOf,
 } from "@fish/shared";
 import { socket, emitWithAck } from "../socket.js";
-import { cardFace, teamStyle } from "../lib/ui.js";
+import { cardFace, teamLabel, teamStyle } from "../lib/ui.js";
 
 interface OverlayProps {
   action: PendingAction;
@@ -28,6 +28,7 @@ interface OverlayProps {
 /** Full-screen, suspenseful narration of the current ask/call, shown on every
  *  player's screen and driven entirely by the server's pending action. */
 export function ActionOverlay({ action, state, hand, myId, roomId }: OverlayProps) {
+  const myTeam = state.players.find((p) => p.id === myId)?.team ?? null;
   const nameOf = (id: string) =>
     state.players.find((p) => p.id === id)?.name ?? "Someone";
 
@@ -53,6 +54,7 @@ export function ActionOverlay({ action, state, hand, myId, roomId }: OverlayProp
               state={state}
               hand={hand}
               myId={myId}
+              myTeam={myTeam}
               roomId={roomId}
               nameOf={nameOf}
             />
@@ -62,6 +64,7 @@ export function ActionOverlay({ action, state, hand, myId, roomId }: OverlayProp
               action={action}
               state={state}
               myId={myId}
+              myTeam={myTeam}
               roomId={roomId}
               nameOf={nameOf}
             />
@@ -79,6 +82,7 @@ function AskView({
   state,
   hand,
   myId,
+  myTeam,
   roomId,
   nameOf,
 }: {
@@ -86,6 +90,7 @@ function AskView({
   state: PublicGameState;
   hand: Card[];
   myId: string;
+  myTeam: number | null;
   roomId: string;
   nameOf: (id: string) => string;
 }) {
@@ -167,7 +172,7 @@ function AskView({
     return (
       <div>
         <p className="mb-1 text-sm text-slate-400">You're asking</p>
-        <h2 className={`mb-4 text-2xl font-bold ${teamStyle(state.players.find((p) => p.id === action.targetId)?.team ?? null).text}`}>
+        <h2 className={`mb-4 text-2xl font-bold ${teamStyle(state.players.find((p) => p.id === action.targetId)?.team ?? null, myTeam).text}`}>
           {target}
         </h2>
         <p className="mb-2 text-xs uppercase tracking-wide text-slate-500">
@@ -204,9 +209,9 @@ function AskView({
   return (
     <div>
       <h2 className="text-2xl font-bold">
-        <span className={teamStyle(state.players.find((p) => p.id === action.askerId)?.team ?? null).text}>{asker}</span>{" "}
+        <span className={teamStyle(state.players.find((p) => p.id === action.askerId)?.team ?? null, myTeam).text}>{asker}</span>{" "}
         is asking{" "}
-        <span className={teamStyle(state.players.find((p) => p.id === action.targetId)?.team ?? null).text}>{target}</span>
+        <span className={teamStyle(state.players.find((p) => p.id === action.targetId)?.team ?? null, myTeam).text}>{target}</span>
         …
       </h2>
       <ThinkingDots />
@@ -220,12 +225,14 @@ function CallView({
   action,
   state,
   myId,
+  myTeam,
   roomId,
   nameOf,
 }: {
   action: PendingCall;
   state: PublicGameState;
   myId: string;
+  myTeam: number | null;
   roomId: string;
   nameOf: (id: string) => string;
 }) {
@@ -254,7 +261,7 @@ function CallView({
           {success ? "Correct call!" : "Wrong call!"}
         </h2>
         <p className="mt-2 text-lg">
-          <span className={teamStyle(winningTeam).text}>Team {winningTeam + 1}</span>{" "}
+          <span className={teamStyle(winningTeam, myTeam).text}>{teamLabel(winningTeam, myTeam)}</span>{" "}
           claims {label}.
         </p>
       </motion.div>
@@ -339,7 +346,7 @@ function CallView({
   return (
     <div>
       <h2 className="mb-1 text-xl font-bold">
-        <span className={teamStyle(callerTeam).text}>{caller}</span>{" "}
+        <span className={teamStyle(callerTeam, myTeam).text}>{caller}</span>{" "}
         {action.committed ? "called" : "would like to call"}
       </h2>
       <p className="mb-4 text-lg">{label}</p>

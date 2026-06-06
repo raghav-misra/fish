@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { GameSummary, PublicGameState } from "@fish/shared";
-import { teamStyle } from "../lib/ui.js";
+import { teamLabel, teamStyle } from "../lib/ui.js";
 
 /** How long the win splash holds before the superlative cards deal in. */
 const AWARDS_DELAY_MS = 3400;
@@ -14,7 +14,7 @@ interface AwardCard {
 }
 
 /** Celebratory, Jackbox-style end screen: a win splash, then funny award cards. */
-export function GameOverOverlay({ state }: { state: PublicGameState }) {
+export function GameOverOverlay({ state, myId }: { state: PublicGameState; myId: string }) {
   const [showAwards, setShowAwards] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setShowAwards(true), AWARDS_DELAY_MS);
@@ -22,7 +22,9 @@ export function GameOverOverlay({ state }: { state: PublicGameState }) {
   }, []);
 
   const winner = state.winner ?? 0;
-  const accent = teamStyle(winner);
+  const myTeam = state.players.find((p) => p.id === myId)?.team ?? 0;
+  const iWon = winner === myTeam;
+  const accent = teamStyle(winner, myTeam);
   const nameOf = (id: string) =>
     state.players.find((p) => p.id === id)?.name ?? "Someone";
   const winners = state.players.filter((p) => p.team === winner);
@@ -48,7 +50,7 @@ export function GameOverOverlay({ state }: { state: PublicGameState }) {
             transition={{ repeat: Infinity, duration: 2.4, ease: "easeInOut" }}
             className={`mt-1 text-5xl font-black drop-shadow ${accent.text}`}
           >
-            🎉 Team {winner + 1} wins! 🎉
+            🎉 {iWon ? "You won!" : "They won!"} 🎉
           </motion.h1>
         </motion.div>
 
@@ -58,7 +60,7 @@ export function GameOverOverlay({ state }: { state: PublicGameState }) {
           transition={{ delay: 0.3 }}
           className="mt-3 text-lg text-slate-200"
         >
-          Congrats to Team {winner + 1}!
+          Congrats to {teamLabel(winner, myTeam)}!
         </motion.p>
 
         <div className="mt-4 flex flex-wrap justify-center gap-2">

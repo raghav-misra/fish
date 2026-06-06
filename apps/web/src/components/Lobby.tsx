@@ -74,6 +74,7 @@ export function Lobby({ roomId, myId, state, onJoined }: LobbyProps) {
 
   const players = state?.players ?? [];
   const me = players.find((p) => p.id === myId);
+  const mySlotTeam = me ? players.indexOf(me) % 2 : 0;
   const canStart = me?.isHost && players.length === 6;
 
   return (
@@ -86,7 +87,7 @@ export function Lobby({ roomId, myId, state, onJoined }: LobbyProps) {
         <ul className="space-y-1">
           {players.map((p, i) => (
             <li key={p.id} className="flex items-center gap-2 text-sm">
-              <span className={`h-2 w-2 rounded-full ${teamStyle(i % 2).dot}`} />
+              <span className={`h-2 w-2 rounded-full ${teamStyle(i % 2, mySlotTeam).dot}`} />
               {p.name} {p.isHost && "♛"} {p.id === myId && <span className="text-slate-500">(you)</span>}
             </li>
           ))}
