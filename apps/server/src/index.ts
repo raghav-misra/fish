@@ -97,14 +97,7 @@ async function revealAndClear(room: Room, success: boolean, logs: GameLogEntry[]
   if (!alive(room) || room.pendingAction !== pending) return;
   room.pendingAction = null;
   broadcastAction(room);
-  if (room.phase === "finished") {
-    setTimeout(() => {
-      if (alive(room)) {
-        io.in(room.id).disconnectSockets(true);
-        rooms.destroyRoom(room.id);
-      }
-    }, 60_000);
-  }
+
 }
 
 /**
