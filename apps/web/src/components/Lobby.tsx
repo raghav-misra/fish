@@ -30,7 +30,7 @@ export function Lobby({ roomId, myId, state, onJoined }: LobbyProps) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-900 text-slate-100">
         <div className="w-80 space-y-4 rounded-xl border border-slate-800 bg-slate-950 p-6">
-          <h1 className="text-center text-2xl font-bold tracking-tight">🐟 Fish</h1>
+          <h1 className="text-center text-2xl tracking-tight">🐟 Fish</h1>
           <input
             className="w-full rounded bg-slate-800 px-3 py-2 outline-none"
             placeholder="Your name"
@@ -38,7 +38,7 @@ export function Lobby({ roomId, myId, state, onJoined }: LobbyProps) {
             onChange={(e) => setName(e.target.value)}
           />
           <button
-            className="w-full rounded bg-indigo-600 px-3 py-2 font-medium disabled:opacity-40"
+            className="w-full rounded bg-indigo-600 px-3 py-2 disabled:opacity-40"
             disabled={!name}
             onClick={() => run(() => emitWithAck("room:create", { playerName: name }))}
           >
@@ -52,7 +52,7 @@ export function Lobby({ roomId, myId, state, onJoined }: LobbyProps) {
               onChange={(e) => setCode(e.target.value)}
             />
             <button
-              className="rounded bg-slate-700 px-3 py-2 font-medium disabled:opacity-40"
+              className="rounded bg-slate-700 px-3 py-2 disabled:opacity-40"
               disabled={!name || !code}
               onClick={() =>
                 run(() =>
@@ -101,7 +101,7 @@ export function Lobby({ roomId, myId, state, onJoined }: LobbyProps) {
         <p className="text-center text-xs text-slate-500">{players.length} / 6 players</p>
         {me?.isHost ? (
           <button
-            className="w-full rounded bg-emerald-600 px-3 py-2 font-medium disabled:opacity-40"
+            className="w-full rounded bg-emerald-600 px-3 py-2 disabled:opacity-40"
             disabled={!canStart}
             onClick={() => socket.emit("game:start", { roomId })}
           >

@@ -28,7 +28,7 @@ export function CenterClaims({ state, myTeam, selectable, onSelect }: CenterClai
           <div
             key={id}
             onClick={canSelect ? () => onSelect?.(id) : undefined}
-            className={`flex h-10 w-24 items-center justify-center rounded-md text-center text-[11px] font-medium leading-tight ${color}`}
+            className={`flex h-14 w-24 items-center justify-center rounded-md text-center leading-tight ${color} text-[14px]`}
           >
             {claimed ? (
               <span>

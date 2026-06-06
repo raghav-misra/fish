@@ -108,7 +108,7 @@ export function GameOverOverlay({ state, myId }: { state: PublicGameState; myId:
                     className="w-52 rounded-2xl border border-slate-700 bg-linear-to-b from-slate-800 to-slate-900 p-4 shadow-xl"
                   >
                     <div className="text-4xl">{a.emoji}</div>
-                    <h3 className="mt-2 text-base font-bold text-amber-300">{a.title}</h3>
+                    <h3 className="mt-2 text-base text-amber-300">{a.title}</h3>
                     <p className="mt-1 text-sm font-semibold text-slate-100">{a.player}</p>
                     <p className="mt-1 text-xs text-slate-400">{a.blurb}</p>
                   </motion.div>

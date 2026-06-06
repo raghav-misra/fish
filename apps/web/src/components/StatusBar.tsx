@@ -20,13 +20,14 @@ export function StatusBar({ state, myId, connected }: StatusBarProps) {
   return (
     <div className="flex items-center justify-between border-b border-slate-800 bg-slate-950/80 px-4 py-2 text-sm backdrop-blur">
       <div className="flex items-center gap-3">
-        <span className="font-bold tracking-tight">🐟 Fish</span>
+        <span className="tracking-tight">🐟 Fish</span>
       </div>
 
       <div className="font-medium">
         {state.phase === "finished" ? (
           <span className="text-amber-300">
-            🏆 {state.winner === myTeam ? "Your team wins!" : "Their team wins!"}
+            🏆{" "}
+            {state.winner === myTeam ? "Your team wins!" : "Their team wins!"}
           </span>
         ) : myTurn ? (
           <span className="text-amber-300">Your turn</span>
@@ -37,7 +38,7 @@ export function StatusBar({ state, myId, connected }: StatusBarProps) {
         )}
       </div>
 
-      <span className={`text-xs ${connected ? "text-emerald-400" : "text-rose-400"}`}>
+      <span className={connected ? "text-emerald-400" : "text-rose-400"}>
         {connected ? "online" : "reconnecting…"}
       </span>
     </div>

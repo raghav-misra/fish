@@ -34,12 +34,12 @@ export function OwnHand({ cards, onReorder, onCardClick }: OwnHandProps) {
             onClick={() => onCardClick?.(card)}
             className={`relative flex h-28 w-20 cursor-grab flex-col rounded-lg border border-slate-200 bg-white shadow-lg active:cursor-grabbing ${color}`}
           >
-            <span className="absolute top-1 left-1.5 text-[11px] font-bold leading-tight">
-              {rank}<br/>{suit}
+            <span className="absolute top-1 left-1.5 leading-tight">
+              {rank}
             </span>
             <span className="m-auto text-3xl">{suit}</span>
-            <span className="absolute bottom-1 right-1.5 rotate-180 text-[11px] font-bold leading-tight">
-              {rank}<br/>{suit}
+            <span className="absolute bottom-1 right-1.5 rotate-180 leading-tight">
+              {rank}
             </span>
           </Reorder.Item>
         );

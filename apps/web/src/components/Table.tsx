@@ -1,11 +1,17 @@
 import { useState } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
-import type { Card, GameLogEntry, HalfSuitId, PublicGameState } from "@fish/shared";
+import type {
+  Card,
+  GameLogEntry,
+  HalfSuitId,
+  PublicGameState,
+} from "@fish/shared";
 import { halfSuitLabel } from "@fish/shared";
 import { useGameStore } from "../store.js";
 import { emitWithAck } from "../socket.js";
-import { cardFace, seatPosition, teamStyle } from "../lib/ui.js";
+import { cardFace, seatPosition } from "../lib/ui.js";
 import { Seat } from "./Seat.js";
+import { PlayerChip } from "./PlayerChip.js";
 import { OwnHand } from "./OwnHand.js";
 import { CenterClaims } from "./CenterClaims.js";
 import { StatusBar } from "./StatusBar.js";
@@ -34,13 +40,19 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
   const scores = [0, 0];
   for (const team of Object.values(state.claims)) scores[team] += 1;
   const lastEvent = log[0]
-    ? describeEvent(log[0], (id) => state.players.find((p) => p.id === id)?.name ?? "Someone")
+    ? describeEvent(
+        log[0],
+        (id) => state.players.find((p) => p.id === id)?.name ?? "Someone",
+      )
     : null;
 
   // Rotate seat order so the local player sits at the bottom (index 0),
   // preserving the alternating-by-team order around the circle.
   const order = state.players;
-  const myIndex = Math.max(0, order.findIndex((p) => p.id === myId));
+  const myIndex = Math.max(
+    0,
+    order.findIndex((p) => p.id === myId),
+  );
   const rotated = [...order.slice(myIndex), ...order.slice(0, myIndex)];
   const others = rotated.slice(1);
 
@@ -61,20 +73,29 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
 
         {/* Running history: only the most recent turn is visible. */}
         <div className="flex justify-center py-1.5">
-          <span className="rounded-full bg-slate-950/70 px-3 py-1 text-xs text-slate-400">
+          <span className="rounded-full bg-slate-950/70 px-3 py-1 text-slate-400 mt-5">
             {lastEvent ?? "Game on — make your move."}
           </span>
         </div>
 
-        <div className="flex flex-1 items-end overflow-hidden" style={{ perspective: "900px" }}>
+        <div
+          className="flex flex-1 items-end overflow-hidden"
+          style={{ perspective: "900px" }}
+        >
           <div
             className="relative h-[82%] w-full rounded-t-xl rounded-b-none bg-emerald-950/40 border border-emerald-900/30 shadow-inner"
-            style={{ transform: "perspective(900px) rotateX(5deg)", transformOrigin: "bottom center" }}
+            style={{
+              transform: "perspective(900px) rotateX(5deg)",
+              transformOrigin: "bottom center",
+            }}
           >
             {others.map((p, i) => {
               const pos = seatPosition(i + 1, 6);
               const isOpponent = p.team !== myTeam;
-              const askable = mode === "ask" && isOpponent && (state.handCounts[p.id] ?? 0) > 0;
+              const askable =
+                mode === "ask" &&
+                isOpponent &&
+                (state.handCounts[p.id] ?? 0) > 0;
               const dimmed = mode === "ask" && !isOpponent;
               return (
                 <div
@@ -95,10 +116,14 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
               );
             })}
 
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5">
-              <div className="flex gap-3 text-xs font-medium">
-                <span className="text-emerald-300">You · {scores[myTeam ?? 0]}</span>
-                <span className="text-rose-300">Them · {scores[1 - (myTeam ?? 0)]}</span>
+            <div className="absolute left-1/2 top-[60%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5">
+              <div className="flex gap-3">
+                <span className="text-emerald-300">
+                  You · {scores[myTeam ?? 0]}
+                </span>
+                <span className="text-rose-300">
+                  Them · {scores[1 - (myTeam ?? 0)]}
+                </span>
               </div>
               <CenterClaims
                 state={state}
@@ -111,13 +136,12 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
             {/* Local player's name chip at the bottom of the table */}
             {me && (
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-medium ring-2 ${
-                    myTurn ? "ring-amber-400 bg-amber-400/10 animate-turn-pulse" : teamStyle(myTeam, myTeam).ring
-                  }`}
-                >
-                  {me.name} (you)
-                </span>
+                <PlayerChip
+                  player={me}
+                  myTeam={myTeam}
+                  isTurn={myTurn}
+                  isMe
+                />
               </div>
             )}
           </div>
@@ -134,7 +158,7 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.15 }}
                   onClick={() => setMode(null)}
-                  className="rounded bg-slate-700 px-4 py-1.5 text-sm font-medium"
+                  className="rounded bg-slate-700 px-4 py-1.5 text-sm"
                 >
                   Cancel
                 </motion.button>
@@ -150,14 +174,14 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
                   <button
                     onClick={() => setMode("ask")}
                     disabled={!myTurn || busy}
-                    className="rounded bg-emerald-600 px-4 py-1.5 text-sm font-medium disabled:opacity-40"
+                    className="rounded bg-emerald-600 px-4 py-1.5 text-sm disabled:opacity-40"
                   >
                     Ask
                   </button>
                   <button
                     onClick={() => setMode("call")}
                     disabled={state.phase !== "playing" || busy}
-                    className="rounded bg-amber-600 px-4 py-1.5 text-sm font-medium disabled:opacity-40"
+                    className="rounded bg-amber-600 px-4 py-1.5 text-sm disabled:opacity-40"
                   >
                     Call
                   </button>
@@ -168,11 +192,11 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
           {hand.length > 0 ? (
             <OwnHand cards={hand} onReorder={setHandOrder} />
           ) : (
-            <p className="text-center text-sm text-slate-500">You have no cards.</p>
+            <p className="text-center text-sm text-slate-500">
+              You have no cards.
+            </p>
           )}
         </div>
-
-
 
         {pendingAction && (
           <ActionOverlay
@@ -193,7 +217,10 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
 }
 
 /** One-line summary of the most recent ask/call for the running history. */
-function describeEvent(entry: GameLogEntry, nameOf: (id: string) => string): string {
+function describeEvent(
+  entry: GameLogEntry,
+  nameOf: (id: string) => string,
+): string {
   if (entry.kind === "ask") {
     const { text } = cardFace(entry.card);
     return entry.success

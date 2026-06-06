@@ -64,7 +64,7 @@ export function CallModal({ state, roomId, onClose }: CallModalProps) {
         <button
           onClick={begin}
           disabled={!halfSuit || busy}
-          className="rounded bg-amber-600 px-4 py-1.5 text-sm font-medium disabled:opacity-40"
+          className="rounded bg-amber-600 px-4 py-1.5 text-sm disabled:opacity-40"
         >
           Call {halfSuit ? halfSuitLabel(halfSuit) : ""}
         </button>

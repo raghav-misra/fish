@@ -133,7 +133,7 @@ function AskView({
       >
         <CardChip text={text} red={red} big />
         <h2
-          className={`mt-5 text-3xl font-bold ${success ? "text-emerald-400" : "text-rose-400"}`}
+          className={`mt-5 text-3xl ${success ? "text-emerald-400" : "text-rose-400"}`}
         >
           {success ? "They got it!" : "Miss!"}
         </h2>
@@ -172,7 +172,7 @@ function AskView({
     return (
       <div>
         <p className="mb-1 text-sm text-slate-400">You're asking</p>
-        <h2 className={`mb-4 text-2xl font-bold ${teamStyle(state.players.find((p) => p.id === action.targetId)?.team ?? null, myTeam).text}`}>
+        <h2 className={`mb-4 text-2xl ${teamStyle(state.players.find((p) => p.id === action.targetId)?.team ?? null, myTeam).text}`}>
           {target}
         </h2>
         <p className="mb-2 text-xs uppercase tracking-wide text-slate-500">
@@ -208,7 +208,7 @@ function AskView({
   // Spectator: asker still choosing.
   return (
     <div>
-      <h2 className="text-2xl font-bold">
+      <h2 className="text-2xl">
         <span className={teamStyle(state.players.find((p) => p.id === action.askerId)?.team ?? null, myTeam).text}>{asker}</span>{" "}
         is asking{" "}
         <span className={teamStyle(state.players.find((p) => p.id === action.targetId)?.team ?? null, myTeam).text}>{target}</span>
@@ -256,7 +256,7 @@ function CallView({
         transition={{ type: "spring", stiffness: 300, damping: 18 }}
       >
         <h2
-          className={`text-3xl font-bold ${success ? "text-emerald-400" : "text-rose-400"}`}
+          className={`text-3xl ${success ? "text-emerald-400" : "text-rose-400"}`}
         >
           {success ? "Correct call!" : "Wrong call!"}
         </h2>
@@ -294,7 +294,7 @@ function CallView({
 
     return (
       <div className="text-left">
-        <h2 className="mb-1 text-center text-xl font-bold">Calling {label}</h2>
+        <h2 className="mb-1 text-center text-xl">Calling {label}</h2>
         <p className="mb-4 text-center text-xs text-slate-500">
           Assign every card to a teammate. This is irreversible.
         </p>
@@ -333,7 +333,7 @@ function CallView({
           <button
             onClick={commit}
             disabled={!allAssigned || busy}
-            className="rounded bg-amber-600 px-4 py-1.5 text-sm font-medium disabled:opacity-40"
+            className="rounded bg-amber-600 px-4 py-1.5 text-sm disabled:opacity-40"
           >
             Lock in call
           </button>
@@ -345,7 +345,7 @@ function CallView({
   // Spectators (and the caller after committing): watch the placement fill in.
   return (
     <div>
-      <h2 className="mb-1 text-xl font-bold">
+      <h2 className="mb-1 text-xl">
         <span className={teamStyle(callerTeam, myTeam).text}>{caller}</span>{" "}
         {action.committed ? "called" : "would like to call"}
       </h2>
@@ -379,7 +379,7 @@ function CallView({
 function CardChip({ text, red, big }: { text: string; red: boolean; big?: boolean }) {
   return (
     <span
-      className={`inline-flex items-center justify-center rounded bg-white font-bold ${
+      className={`inline-flex items-center justify-center rounded bg-white ${
         red ? "text-rose-600" : "text-slate-900"
       } ${big ? "h-24 w-20 text-2xl" : "h-9 w-9 text-sm"}`}
     >
