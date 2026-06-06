@@ -97,7 +97,9 @@ async function revealAndClear(room: Room, success: boolean, logs: GameLogEntry[]
   if (!alive(room) || room.pendingAction !== pending) return;
   room.pendingAction = null;
   broadcastAction(room);
-
+  if (room.phase === "finished") {
+    rooms.destroyRoom(room.id);
+  }
 }
 
 /**

@@ -123,6 +123,10 @@ export class RoomManager {
   }
 
 
+  destroyRoom(roomId: string): void {
+    this.rooms.delete(roomId);
+  }
+
   listRooms(): RoomSummary[] {
     return [...this.rooms.values()].map((r) => ({
       roomId: r.id,
