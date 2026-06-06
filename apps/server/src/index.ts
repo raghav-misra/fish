@@ -196,9 +196,6 @@ async function stagedCall(
   return { ok: true, success, team };
 }
 
-// Admin/testing API: server-authoritative shortcuts to fill rooms with bots,
-// inspect state, and play turns on their behalf. Bot asks/calls run through the
-// same staged reveal as humans. Guarded by an admin token.
 registerAdminRoutes(fastify, {
   rooms,
   adminToken: config.adminToken,

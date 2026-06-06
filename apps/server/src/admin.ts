@@ -123,7 +123,6 @@ export function registerAdminRoutes(app: FastifyInstance, deps: AdminDeps): void
       return room;
     };
 
-    // --- Inspection -------------------------------------------------------
     admin.get("/admin/rooms", async () => ({ rooms: deps.rooms.listRooms() }));
 
     admin.get("/admin/rooms/:roomId", async (req, reply) => {
@@ -133,7 +132,6 @@ export function registerAdminRoutes(app: FastifyInstance, deps: AdminDeps): void
       return snapshot(room);
     });
 
-    // --- Room + player management ----------------------------------------
     admin.post("/admin/rooms", async (req, reply) => {
       const body = CreateRoomBody.safeParse(req.body ?? {});
       if (!body.success) return reply.code(400).send({ error: "bad_input" });
@@ -180,7 +178,6 @@ export function registerAdminRoutes(app: FastifyInstance, deps: AdminDeps): void
       return { added, snapshot: snapshot(room) };
     });
 
-    // --- Game control -----------------------------------------------------
     admin.post("/admin/rooms/:roomId/start", async (req, reply) => {
       const { roomId } = req.params as { roomId: string };
       const room = getRoom(reply, roomId);
@@ -204,8 +201,6 @@ export function registerAdminRoutes(app: FastifyInstance, deps: AdminDeps): void
       if (!card) {
         return reply.code(400).send({ error: "bad_card", message: `Unknown card "${body.data.card}"` });
       }
-      // Runs the full staged reveal (announce → suspense → result); resolves
-      // once the overlay has cleared, so the response reflects the settled game.
       const result = await deps.stagedAsk(room, body.data.askerId, body.data.targetId, card);
       if (!result.ok) {
         const status = result.code === "BUSY" ? 409 : 400;
