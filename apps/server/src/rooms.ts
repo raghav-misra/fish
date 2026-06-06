@@ -1,6 +1,7 @@
 import { nanoid } from "nanoid";
 import {
   type Card,
+  type HalfSuitId,
   type Player,
   type PublicGameState,
   type RoomSummary,
@@ -14,6 +15,10 @@ export interface Room {
   /** Private hands, keyed by player id. Never broadcast wholesale. */
   hands: Map<string, Card[]>;
   currentTurn: string | null;
+  /** Half suits claimed so far, mapped to the team (0 | 1) that won them. */
+  claims: Map<HalfSuitId, number>;
+  /** Winning team once finished, else null. */
+  winner: number | null;
   createdAt: number;
 }
 
@@ -39,6 +44,8 @@ export class RoomManager {
       players: new Map(),
       hands: new Map(),
       currentTurn: null,
+      claims: new Map(),
+      winner: null,
       createdAt: Date.now(),
     };
     const player = this.addPlayer(room, host.playerName, true);
@@ -77,22 +84,19 @@ export class RoomManager {
     if (player) player.connected = connected;
   }
 
-  startGame(room: Room): void {
-    // TODO: deal according to Fish rules.
-    room.phase = "playing";
-    const first = [...room.players.keys()][0] ?? null;
-    room.currentTurn = first;
-  }
-
   /** Public state safe to broadcast to everyone in the room. */
   toPublicState(room: Room): PublicGameState {
     const handCounts: Record<string, number> = {};
     for (const [pid, cards] of room.hands) handCounts[pid] = cards.length;
+    const claims: Record<string, number> = {};
+    for (const [hs, team] of room.claims) claims[hs] = team;
     return {
       phase: room.phase,
       players: [...room.players.values()],
       currentTurn: room.currentTurn,
       handCounts,
+      claims,
+      winner: room.winner,
     };
   }
 

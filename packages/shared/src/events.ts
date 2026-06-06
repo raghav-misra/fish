@@ -4,6 +4,8 @@ import {
   PrivateHandSchema,
   RoomSummarySchema,
 } from "./room.js";
+import { CardSchema } from "./cards.js";
+import { HalfSuitIdSchema } from "./game.js";
 
 export const CreateRoomPayloadSchema = z.object({
   playerName: z.string().min(1).max(24),
@@ -25,13 +27,34 @@ export const StartGamePayloadSchema = z.object({
   roomId: z.string().min(1),
 });
 export type StartGamePayload = z.infer<typeof StartGamePayloadSchema>;
-
-/** Reconnect after a dropped WebSocket. */
 export const ResumePayloadSchema = z.object({
   roomId: z.string().min(1),
   playerId: z.string().min(1),
 });
 export type ResumePayload = z.infer<typeof ResumePayloadSchema>;
+
+/** Ask an opponent for a specific card. */
+export const AskPayloadSchema = z.object({
+  roomId: z.string().min(1),
+  targetId: z.string().min(1),
+  card: CardSchema,
+});
+export type AskPayload = z.infer<typeof AskPayloadSchema>;
+
+/** Map a single half-suit card to the teammate claimed to hold it. */
+export const CardPlacementSchema = z.object({
+  card: CardSchema,
+  playerId: z.string().min(1),
+});
+export type CardPlacement = z.infer<typeof CardPlacementSchema>;
+
+/** Call (claim) a half suit by stating exactly where all 6 of its cards sit. */
+export const CallPayloadSchema = z.object({
+  roomId: z.string().min(1),
+  halfSuit: HalfSuitIdSchema,
+  placement: z.array(CardPlacementSchema).length(6),
+});
+export type CallPayload = z.infer<typeof CallPayloadSchema>;
 
 export const RoomJoinedSchema = z.object({
   roomId: z.string(),
@@ -45,6 +68,25 @@ export const ErrorMessageSchema = z.object({
 });
 export type ErrorMessage = z.infer<typeof ErrorMessageSchema>;
 
+/** Broadcast feed describing what just happened, for the UI activity log. */
+export const GameLogEntrySchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("ask"),
+    askerId: z.string(),
+    targetId: z.string(),
+    card: CardSchema,
+    success: z.boolean(),
+  }),
+  z.object({
+    kind: z.literal("call"),
+    callerId: z.string(),
+    halfSuit: HalfSuitIdSchema,
+    success: z.boolean(),
+    team: z.number().int(),
+  }),
+]);
+export type GameLogEntry = z.infer<typeof GameLogEntrySchema>;
+
 type Ack<T> = (
   response: { ok: true; data: T } | { ok: false; error: ErrorMessage },
 ) => void;
@@ -55,12 +97,15 @@ export interface ClientToServerEvents {
   "room:leave": (payload: LeaveRoomPayload) => void;
   "room:resume": (payload: ResumePayload, ack: Ack<RoomJoined>) => void;
   "game:start": (payload: StartGamePayload) => void;
+  "game:ask": (payload: AskPayload, ack: Ack<null>) => void;
+  "game:call": (payload: CallPayload, ack: Ack<null>) => void;
 }
 
 export interface ServerToClientEvents {
   "room:list": (rooms: z.infer<typeof RoomSummarySchema>[]) => void;
   "game:state": (state: z.infer<typeof PublicGameStateSchema>) => void;
   "game:hand": (hand: z.infer<typeof PrivateHandSchema>) => void;
+  "game:log": (entry: GameLogEntry) => void;
   "server:error": (error: ErrorMessage) => void;
 }
 

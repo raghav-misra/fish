@@ -5,14 +5,18 @@ import {
   type ClientToServerEvents,
   type ServerToClientEvents,
   type SocketData,
+  type GameLogEntry,
   CreateRoomPayloadSchema,
   JoinRoomPayloadSchema,
   LeaveRoomPayloadSchema,
   StartGamePayloadSchema,
   ResumePayloadSchema,
+  AskPayloadSchema,
+  CallPayloadSchema,
 } from "@fish/shared";
 import { config } from "./config.js";
 import { RoomManager, type Room } from "./rooms.js";
+import { startGame, applyAsk, applyCall } from "./game.js";
 
 const fastify = Fastify({ logger: true });
 
@@ -39,6 +43,11 @@ function broadcastRoom(room: Room) {
   for (const [playerId, cards] of room.hands) {
     io.to(`player:${playerId}`).emit("game:hand", { cards });
   }
+}
+
+/** Fan out the activity-log entries produced by an engine action. */
+function emitLogs(room: Room, logs: GameLogEntry[]) {
+  for (const entry of logs) io.to(room.id).emit("game:log", entry);
 }
 
 io.on("connection", (socket) => {
@@ -114,8 +123,58 @@ io.on("connection", (socket) => {
     if (!player?.isHost) {
       return socket.emit("server:error", { code: "FORBIDDEN", message: "Only the host can start" });
     }
-    rooms.startGame(room);
+    const result = startGame(room);
+    if (!result.ok) {
+      return socket.emit("server:error", { code: result.code, message: result.message });
+    }
     broadcastRoom(room);
+    emitLogs(room, result.logs);
+  });
+
+  socket.on("game:ask", (raw, ack) => {
+    const parsed = AskPayloadSchema.safeParse(raw);
+    if (!parsed.success) {
+      return ack({ ok: false, error: { code: "BAD_INPUT", message: "Invalid payload" } });
+    }
+    const room = rooms.getRoom(parsed.data.roomId);
+    if (!room || !socket.data.playerId) {
+      return ack({ ok: false, error: { code: "NOT_FOUND", message: "Room not found" } });
+    }
+    const result = applyAsk(
+      room,
+      socket.data.playerId,
+      parsed.data.targetId,
+      parsed.data.card,
+    );
+    if (!result.ok) {
+      return ack({ ok: false, error: { code: result.code, message: result.message } });
+    }
+    ack({ ok: true, data: null });
+    broadcastRoom(room);
+    emitLogs(room, result.logs);
+  });
+
+  socket.on("game:call", (raw, ack) => {
+    const parsed = CallPayloadSchema.safeParse(raw);
+    if (!parsed.success) {
+      return ack({ ok: false, error: { code: "BAD_INPUT", message: "Invalid payload" } });
+    }
+    const room = rooms.getRoom(parsed.data.roomId);
+    if (!room || !socket.data.playerId) {
+      return ack({ ok: false, error: { code: "NOT_FOUND", message: "Room not found" } });
+    }
+    const result = applyCall(
+      room,
+      socket.data.playerId,
+      parsed.data.halfSuit,
+      parsed.data.placement,
+    );
+    if (!result.ok) {
+      return ack({ ok: false, error: { code: result.code, message: result.message } });
+    }
+    ack({ ok: true, data: null });
+    broadcastRoom(room);
+    emitLogs(room, result.logs);
   });
 
   socket.on("disconnect", () => {

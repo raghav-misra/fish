@@ -19,6 +19,10 @@ export const PublicGameStateSchema = z.object({
   players: z.array(PlayerSchema),
   currentTurn: z.string().nullable(),
   handCounts: z.record(z.string(), z.number().int()),
+  /** Half suits that have been claimed, mapped to the team (0 | 1) that won them. */
+  claims: z.record(z.string(), z.number().int()),
+  /** Winning team once the game is finished, else null. */
+  winner: z.number().int().nullable(),
 });
 export type PublicGameState = z.infer<typeof PublicGameStateSchema>;
 
