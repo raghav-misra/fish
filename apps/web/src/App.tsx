@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useGameStore } from "./store.js";
 import { socket, emitWithAck } from "./socket.js";
-import type { RoomJoined } from "@fish/shared";
+import { cardId, type RoomJoined } from "@fish/shared";
 
 function emitStart(roomId: string) {
   socket.emit("game:start", { roomId });
@@ -120,10 +120,12 @@ export default function App() {
               <div className="flex flex-wrap gap-1">
                 {hand?.cards.map((c) => (
                   <span
-                    key={`${c.rank}-${c.suit}`}
+                    key={cardId(c)}
                     className="rounded bg-white text-slate-900 px-2 py-3 text-sm font-medium"
                   >
-                    {c.rank} {c.suit[0]}
+                    {c.kind === "joker"
+                      ? `${c.color === "red" ? "🃏" : "🂿"} joker`
+                      : `${c.rank} ${c.suit[0]}`}
                   </span>
                 ))}
               </div>
