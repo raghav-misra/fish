@@ -3,6 +3,7 @@ import type { PublicGameState } from "@fish/shared";
 import { emitWithAck } from "../socket.js";
 import { teamStyle } from "../lib/ui.js";
 import { Backdrop } from "./Backdrop.js";
+import { GameButton } from "./GameButton.js";
 
 interface AskModalProps {
   state: PublicGameState;
@@ -36,7 +37,7 @@ export function AskModal({ state, myTeam, roomId, onClose }: AskModalProps) {
   return (
     <Backdrop onClose={onClose} width="max-w-md">
       <h2 className="mb-1 text-lg font-semibold">Ask an opponent</h2>
-      <p className="mb-4 text-xs text-slate-500">
+      <p className="mb-4 text-xs text-zinc-500">
         Pick who to ask — you'll choose the card next.
       </p>
       <div className="flex flex-wrap gap-2">
@@ -51,14 +52,14 @@ export function AskModal({ state, myTeam, roomId, onClose }: AskModalProps) {
           </button>
         ))}
         {opponents.length === 0 && (
-          <span className="text-sm text-slate-500">No opponents have cards.</span>
+          <span className="text-sm text-zinc-500">No opponents have cards.</span>
         )}
       </div>
       {err && <p className="mt-3 text-sm text-rose-400">{err}</p>}
       <div className="mt-4 flex justify-end">
-        <button onClick={onClose} className="rounded px-3 py-1.5 text-sm text-slate-400">
+        <GameButton variant="ghost" size="sm" onClick={onClose}>
           Cancel
-        </button>
+        </GameButton>
       </div>
     </Backdrop>
   );

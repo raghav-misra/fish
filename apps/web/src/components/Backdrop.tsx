@@ -21,7 +21,7 @@ export function Backdrop({
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.92, opacity: 0 }}
         transition={{ type: "spring", stiffness: 420, damping: 30 }}
-        className={`w-full ${width} rounded-xl border border-slate-700 bg-slate-900 p-5 shadow-2xl`}
+        className={`w-full ${width} rounded-xl border border-zinc-700 bg-zinc-900 p-5 shadow-2xl`}
         onClick={(e) => e.stopPropagation()}
       >
         {children}

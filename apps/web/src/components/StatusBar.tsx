@@ -18,7 +18,7 @@ export function StatusBar({ state, myId, connected }: StatusBarProps) {
   const theirScore = scores[1 - myTeam];
 
   return (
-    <div className="flex items-center justify-between border-b border-slate-800 bg-slate-950/80 px-4 py-2 text-sm backdrop-blur">
+    <div className="flex items-center justify-between border-b border-zinc-800 bg-zinc-950/80 px-4 py-2 text-sm backdrop-blur">
       <div className="flex items-center gap-3">
         <span className="tracking-tight">🐟 Fish</span>
       </div>
@@ -32,7 +32,7 @@ export function StatusBar({ state, myId, connected }: StatusBarProps) {
         ) : myTurn ? (
           <span className="text-amber-300">Your turn</span>
         ) : (
-          <span className="text-slate-300">
+          <span className="text-zinc-300">
             {turnPlayer ? `${turnPlayer.name}'s turn` : "—"}
           </span>
         )}

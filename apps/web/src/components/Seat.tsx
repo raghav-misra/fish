@@ -51,10 +51,10 @@ export function Seat({
               🐟
             </div>
           ))}
-          {fan === 0 && <span className="text-slate-500 italic">empty</span>}
+          {fan === 0 && <span className="text-zinc-500 italic">empty</span>}
         </div>
         {count > 0 && (
-          <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-slate-700 text-slate-100 ring-1 ring-slate-600">
+          <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-700 text-zinc-100 ring-1 ring-zinc-600">
             {count}
           </span>
         )}

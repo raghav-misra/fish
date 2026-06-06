@@ -23,7 +23,7 @@ export function PlayerChip({
 
   const ringClass = isTurn
     ? "ring-amber-400 bg-amber-400/10"
-    : `${team.ring} bg-slate-800/80`;
+    : `${team.ring} bg-zinc-800/80`;
 
   const turnPulse = isTurn && isMe ? "animate-turn-pulse" : "";
   const selectClass = selectable
@@ -35,9 +35,9 @@ export function PlayerChip({
       className={`flex items-center gap-2 rounded-full px-3 py-1 ring-2 transition-all duration-200 ${ringClass} ${selectClass} ${turnPulse} ${className}`}
     >
       <span
-        className={`h-2 w-2 rounded-full ${player.connected ? team.dot : "bg-slate-600"}`}
+        className={`h-2 w-2 rounded-full ${player.connected ? team.dot : "bg-zinc-600"}`}
       />
-      <span className="text-slate-100">
+      <span className="text-zinc-100">
         {player.name}
         {isMe && " (you)"}
       </span>

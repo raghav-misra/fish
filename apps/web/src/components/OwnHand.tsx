@@ -10,8 +10,15 @@ interface OwnHandProps {
   onCardClick?: (card: Card) => void;
 }
 
-/** The local player's hand: face-up, larger, hover-lift, drag-to-reorder. */
+/** The local player's hand: face-up, fanned like a real hand with tilt and overlap. */
 export function OwnHand({ cards, onReorder, onCardClick }: OwnHandProps) {
+  const count = cards.length;
+  // Fan parameters
+  const maxSpread = 40; // max total rotation spread in degrees
+  const totalAngle = Math.min(maxSpread, count * 5);
+  const step = count > 1 ? totalAngle / (count - 1) : 0;
+  const startAngle = -totalAngle / 2;
+
   return (
     <Reorder.Group
       axis="x"
@@ -19,20 +26,32 @@ export function OwnHand({ cards, onReorder, onCardClick }: OwnHandProps) {
       onReorder={onReorder}
       className="flex items-end justify-center gap-1 px-4"
     >
-      {cards.map((card) => {
+      {cards.map((card, i) => { 
         const { red } = cardFace(card);
         const isJoker = card.kind === "joker";
         const rank = isJoker ? "★" : card.rank;
         const suit = isJoker ? (card.color === "red" ? "♦" : "♣") : SUIT_GLYPH[card.suit];
-        const color = red ? "text-rose-600" : "text-slate-900";
+        const color = red ? "text-rose-600" : "text-zinc-900";
+        const angle = startAngle + step * i;
+        // Vertical offset: cards at edges dip down (arc effect)
+        const normalized = count > 1 ? (i - (count - 1) / 2) / ((count - 1) / 2) : 0;
+        const translateY = normalized * normalized * 18; // quadratic arc
+
         return (
           <Reorder.Item
             key={cardId(card)}
             value={card}
-            whileDrag={{ scale: 1.1, zIndex: 50 }}
-            whileHover={{ y: -16 }}
+            whileDrag={{ scale: 1.15, zIndex: 50, rotate: 0 }}
+            whileHover={{ y: -24, zIndex: 40, scale: 1.08 }}
             onClick={() => onCardClick?.(card)}
-            className={`relative flex h-28 w-20 cursor-grab flex-col rounded-lg border border-slate-200 bg-white shadow-lg active:cursor-grabbing ${color}`}
+            className={`relative flex h-28 w-20 cursor-grab flex-col rounded-lg border border-zinc-300 bg-white shadow active:cursor-grabbing ${color}`}
+            style={{
+              marginLeft: i === 0 ? 0 : "-1.5rem",
+              rotate: `${angle}deg`,
+              translateY: `${translateY}px`,
+              transformOrigin: "bottom center",
+              zIndex: i,
+            }}
           >
             <span className="absolute top-1 left-1.5 leading-tight">
               {rank}

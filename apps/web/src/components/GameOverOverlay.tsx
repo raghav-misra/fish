@@ -34,7 +34,7 @@ export function GameOverOverlay({ state, myId }: { state: PublicGameState; myId:
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden bg-slate-950/85 p-6 text-center backdrop-blur"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden bg-zinc-950/85 p-6 text-center backdrop-blur"
     >
       <Confetti />
 
@@ -44,7 +44,7 @@ export function GameOverOverlay({ state, myId }: { state: PublicGameState; myId:
           animate={{ scale: 1, opacity: 1, rotate: 0 }}
           transition={{ type: "spring", stiffness: 260, damping: 14 }}
         >
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Game over</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-zinc-400">Game over</p>
           <motion.h1
             animate={{ y: [0, -6, 0] }}
             transition={{ repeat: Infinity, duration: 2.4, ease: "easeInOut" }}
@@ -58,7 +58,7 @@ export function GameOverOverlay({ state, myId }: { state: PublicGameState; myId:
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="mt-3 text-lg text-slate-200"
+          className="mt-3 text-lg text-zinc-200"
         >
           Congrats to {teamLabel(winner, myTeam)}!
         </motion.p>
@@ -75,7 +75,7 @@ export function GameOverOverlay({ state, myId }: { state: PublicGameState; myId:
                 stiffness: 320,
                 damping: 18,
               }}
-              className={`rounded-full bg-slate-900/70 px-4 py-1.5 text-sm font-semibold ring-2 ${accent.ring} ${accent.text}`}
+              className={`rounded-full bg-zinc-900/70 px-4 py-1.5 text-sm font-semibold ring-2 ${accent.ring} ${accent.text}`}
             >
               {p.name}
             </motion.span>
@@ -90,7 +90,7 @@ export function GameOverOverlay({ state, myId }: { state: PublicGameState; myId:
               animate={{ opacity: 1 }}
               className="mt-8"
             >
-              <p className="mb-3 text-xs uppercase tracking-[0.3em] text-slate-500">
+              <p className="mb-3 text-xs uppercase tracking-[0.3em] text-zinc-500">
                 Superlatives
               </p>
               <div className="flex flex-wrap justify-center gap-3">
@@ -105,12 +105,12 @@ export function GameOverOverlay({ state, myId }: { state: PublicGameState; myId:
                       stiffness: 240,
                       damping: 16,
                     }}
-                    className="w-52 rounded-2xl border border-slate-700 bg-linear-to-b from-slate-800 to-slate-900 p-4 shadow-xl"
+                    className="w-52 rounded-2xl border border-zinc-700 bg-linear-to-b from-zinc-800 to-zinc-900 p-4 shadow-xl"
                   >
                     <div className="text-4xl">{a.emoji}</div>
                     <h3 className="mt-2 text-base text-amber-300">{a.title}</h3>
-                    <p className="mt-1 text-sm font-semibold text-slate-100">{a.player}</p>
-                    <p className="mt-1 text-xs text-slate-400">{a.blurb}</p>
+                    <p className="mt-1 text-sm font-semibold text-zinc-100">{a.player}</p>
+                    <p className="mt-1 text-xs text-zinc-400">{a.blurb}</p>
                   </motion.div>
                 ))}
               </div>

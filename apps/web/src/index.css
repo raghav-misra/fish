@@ -12,6 +12,7 @@
 body {
   margin: 0;
   font-family: "Chicle", cursive;
+  overflow: hidden;
 }
 
 @keyframes turn-pulse {

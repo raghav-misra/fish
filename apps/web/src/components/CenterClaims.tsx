@@ -11,7 +11,7 @@ interface CenterClaimsProps {
 /** Center of the table: every half suit and which team has claimed it. */
 export function CenterClaims({ state, myTeam, selectable, onSelect }: CenterClaimsProps) {
   return (
-    <div className="grid grid-cols-3 gap-1.5 rounded-xl bg-slate-900/70 p-3 backdrop-blur">
+    <div className="grid grid-cols-3 gap-1.5 rounded-xl bg-zinc-900/70 p-3 backdrop-blur">
       {HALF_SUIT_IDS.map((id) => {
         const team = state.claims[id];
         const claimed = team !== undefined;
@@ -23,7 +23,7 @@ export function CenterClaims({ state, myTeam, selectable, onSelect }: CenterClai
             : "bg-rose-500/80 text-white"
           : canSelect
             ? "bg-amber-500/20 text-amber-300 ring-1 ring-amber-400 cursor-pointer hover:bg-amber-500/30 transition-all duration-200 scale-105"
-            : "bg-slate-800/60 text-slate-500 transition-all duration-200";
+            : "bg-zinc-800/60 text-zinc-500 transition-all duration-200";
         return (
           <div
             key={id}

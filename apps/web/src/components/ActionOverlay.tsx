@@ -16,6 +16,7 @@ import {
 } from "@fish/shared";
 import { socket, emitWithAck } from "../socket.js";
 import { cardFace, teamLabel, teamStyle } from "../lib/ui.js";
+import { GameButton } from "./GameButton.js";
 
 interface OverlayProps {
   action: PendingAction;
@@ -46,7 +47,7 @@ export function ActionOverlay({ action, state, hand, myId, roomId }: OverlayProp
           initial={{ scale: 0.9, y: 12, opacity: 0 }}
           animate={{ scale: 1, y: 0, opacity: 1 }}
           transition={{ type: "spring", stiffness: 360, damping: 28 }}
-          className="w-full max-w-xl rounded-2xl border border-slate-700 bg-slate-900/95 p-8 text-center shadow-2xl"
+          className="w-full max-w-xl rounded-2xl border border-zinc-700 bg-zinc-900/95 p-8 text-center shadow-2xl"
         >
           {action.kind === "ask" ? (
             <AskView
@@ -137,7 +138,7 @@ function AskView({
         >
           {success ? "They got it!" : "Miss!"}
         </h2>
-        <p className="mt-1 text-sm text-slate-400">
+        <p className="mt-1 text-sm text-zinc-400">
           {success
             ? `${target} handed it over to ${asker}.`
             : `${target} didn't have it. Turn passes.`}
@@ -151,7 +152,7 @@ function AskView({
     const { text, red } = cardFace(action.card);
     return (
       <div>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-zinc-400">
           {asker} asks {target}
         </p>
         <p className="mb-4 text-lg">Do you have…</p>
@@ -162,7 +163,7 @@ function AskView({
         >
           <CardChip text={text} red={red} big />
         </motion.div>
-        <p className="mt-4 text-xs text-slate-500">Waiting…</p>
+        <p className="mt-4 text-xs text-zinc-500">Waiting…</p>
       </div>
     );
   }
@@ -171,11 +172,11 @@ function AskView({
   if (iAmAsker) {
     return (
       <div>
-        <p className="mb-1 text-sm text-slate-400">You're asking</p>
+        <p className="mb-1 text-sm text-zinc-400">You're asking</p>
         <h2 className={`mb-4 text-2xl ${teamStyle(state.players.find((p) => p.id === action.targetId)?.team ?? null, myTeam).text}`}>
           {target}
         </h2>
-        <p className="mb-2 text-xs uppercase tracking-wide text-slate-500">
+        <p className="mb-2 text-xs uppercase tracking-wide text-zinc-500">
           Pick the card
         </p>
         <div className="mx-auto grid max-h-56 max-w-md grid-cols-6 gap-1 overflow-y-auto">
@@ -187,7 +188,7 @@ function AskView({
                 disabled={busy}
                 onClick={() => commit(c)}
                 className={`flex h-12 items-center justify-center rounded bg-white text-sm font-semibold disabled:opacity-50 ${
-                  red ? "text-rose-600" : "text-slate-900"
+                  red ? "text-rose-600" : "text-zinc-900"
                 }`}
               >
                 {text}
@@ -197,7 +198,7 @@ function AskView({
         </div>
         <button
           onClick={() => socket.emit("game:action:cancel", { roomId })}
-          className="mt-4 text-xs text-slate-500 hover:text-slate-300"
+          className="mt-4 text-xs text-zinc-500 hover:text-zinc-300"
         >
           Cancel
         </button>
@@ -295,7 +296,7 @@ function CallView({
     return (
       <div className="text-left">
         <h2 className="mb-1 text-center text-xl">Calling {label}</h2>
-        <p className="mb-4 text-center text-xs text-slate-500">
+        <p className="mb-4 text-center text-xs text-zinc-500">
           Assign every card to a teammate. This is irreversible.
         </p>
         <div className="space-y-1.5">
@@ -312,7 +313,7 @@ function CallView({
                       className={`rounded px-2 py-0.5 text-xs ring-1 ${
                         assign[cardId(card)] === p.id
                           ? "bg-emerald-500/20 ring-emerald-400"
-                          : "text-slate-300 ring-slate-700"
+                          : "text-zinc-300 ring-zinc-700"
                       }`}
                     >
                       {p.id === myId ? "Me" : p.name}
@@ -324,19 +325,20 @@ function CallView({
           })}
         </div>
         <div className="mt-5 flex justify-center gap-2">
-          <button
+          <GameButton
+            variant="ghost"
+            size="sm"
             onClick={() => socket.emit("game:action:cancel", { roomId })}
-            className="rounded px-3 py-1.5 text-sm text-slate-400"
           >
             Cancel
-          </button>
-          <button
+          </GameButton>
+          <GameButton
+            variant="danger"
             onClick={commit}
             disabled={!allAssigned || busy}
-            className="rounded bg-amber-600 px-4 py-1.5 text-sm disabled:opacity-40"
           >
             Lock in call
-          </button>
+          </GameButton>
         </div>
       </div>
     );
@@ -361,7 +363,7 @@ function CallView({
                 key={placed?.playerId ?? "none"}
                 initial={{ opacity: 0, x: -6 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="text-sm text-slate-300"
+                className="text-sm text-zinc-300"
               >
                 {placed ? `→ ${nameOf(placed.playerId)}` : "→ …"}
               </motion.span>
@@ -369,7 +371,7 @@ function CallView({
           );
         })}
       </div>
-      {action.committed && <p className="mt-4 text-xs text-slate-500">Locking it in…</p>}
+      {action.committed && <p className="mt-4 text-xs text-zinc-500">Locking it in…</p>}
     </div>
   );
 }
@@ -380,7 +382,7 @@ function CardChip({ text, red, big }: { text: string; red: boolean; big?: boolea
   return (
     <span
       className={`inline-flex items-center justify-center rounded bg-white ${
-        red ? "text-rose-600" : "text-slate-900"
+        red ? "text-rose-600" : "text-zinc-900"
       } ${big ? "h-24 w-20 text-2xl" : "h-9 w-9 text-sm"}`}
     >
       {text}
@@ -394,7 +396,7 @@ function ThinkingDots() {
       {[0, 1, 2].map((i) => (
         <motion.span
           key={i}
-          className="h-2.5 w-2.5 rounded-full bg-slate-400"
+          className="h-2.5 w-2.5 rounded-full bg-zinc-400"
           animate={{ opacity: [0.3, 1, 0.3] }}
           transition={{ repeat: Infinity, duration: 1, delay: i * 0.2 }}
         />

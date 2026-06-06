@@ -13,6 +13,7 @@ import { cardFace, seatPosition } from "../lib/ui.js";
 import { Seat } from "./Seat.js";
 import { PlayerChip } from "./PlayerChip.js";
 import { OwnHand } from "./OwnHand.js";
+import { GameButton } from "./GameButton.js";
 import { CenterClaims } from "./CenterClaims.js";
 import { StatusBar } from "./StatusBar.js";
 import { ActionOverlay } from "./ActionOverlay.js";
@@ -68,12 +69,12 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
 
   return (
     <LayoutGroup>
-      <div className="flex h-screen flex-col bg-slate-900 text-slate-100">
+      <div className="flex h-screen flex-col bg-zinc-900 text-zinc-100">
         <StatusBar state={state} myId={myId} connected={connected} />
 
         {/* Running history: only the most recent turn is visible. */}
         <div className="flex justify-center py-1.5">
-          <span className="rounded-full bg-slate-950/70 px-3 py-1 text-slate-400 mt-5">
+          <span className="rounded-full bg-zinc-950/70 px-3 py-1 text-zinc-400 mt-5">
             {lastEvent ?? "Game on — make your move."}
           </span>
         </div>
@@ -83,7 +84,7 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
           style={{ perspective: "900px" }}
         >
           <div
-            className="relative h-[82%] w-full rounded-t-xl rounded-b-none bg-emerald-950/40 border border-emerald-900/30 shadow-inner"
+            className="relative h-[82%] w-[90%] mx-auto rounded-xl bg-linear-to-b from-emerald-800/80 via-emerald-900/70 to-emerald-950/90 shadow-[inset_0_2px_30px_rgba(0,0,0,0.3)]"
             style={{
               transform: "perspective(900px) rotateX(5deg)",
               transformOrigin: "bottom center",
@@ -147,21 +148,21 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
           </div>
         </div>
 
-        <div className="border-t border-slate-800 bg-slate-950/80 pb-3">
+        <div className="mx-auto w-full max-w-2xl pb-3">
           <div className="mb-2 mt-2 flex items-center justify-center gap-2">
             <AnimatePresence mode="wait">
               {mode ? (
-                <motion.button
+                <motion.div
                   key="cancel"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.15 }}
-                  onClick={() => setMode(null)}
-                  className="rounded bg-slate-700 px-4 py-1.5 text-sm"
                 >
-                  Cancel
-                </motion.button>
+                  <GameButton variant="neutral" onClick={() => setMode(null)}>
+                    Cancel
+                  </GameButton>
+                </motion.div>
               ) : (
                 <motion.div
                   key="actions"
@@ -169,22 +170,22 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.15 }}
-                  className="flex gap-2"
+                  className="flex gap-3"
                 >
-                  <button
+                  <GameButton
+                    variant="primary"
                     onClick={() => setMode("ask")}
                     disabled={!myTurn || busy}
-                    className="rounded bg-emerald-600 px-4 py-1.5 text-sm disabled:opacity-40"
                   >
                     Ask
-                  </button>
-                  <button
+                  </GameButton>
+                  <GameButton
+                    variant="danger"
                     onClick={() => setMode("call")}
                     disabled={state.phase !== "playing" || busy}
-                    className="rounded bg-amber-600 px-4 py-1.5 text-sm disabled:opacity-40"
                   >
                     Call
-                  </button>
+                  </GameButton>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -192,7 +193,7 @@ export function Table({ state, hand, myId, roomId, connected }: TableProps) {
           {hand.length > 0 ? (
             <OwnHand cards={hand} onReorder={setHandOrder} />
           ) : (
-            <p className="text-center text-sm text-slate-500">
+            <p className="text-center text-sm text-zinc-500">
               You have no cards.
             </p>
           )}
