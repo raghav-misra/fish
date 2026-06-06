@@ -12,10 +12,6 @@ export function StatusBar({ state, myId, connected }: StatusBarProps) {
   const myTurn = state.currentTurn === myId;
   const me = state.players.find((p) => p.id === myId);
   const myTeam = me?.team ?? 0;
-  const scores = [0, 0];
-  for (const team of Object.values(state.claims)) scores[team] += 1;
-  const myScore = scores[myTeam];
-  const theirScore = scores[1 - myTeam];
 
   return (
     <div className="flex items-center justify-between border-b border-zinc-800 bg-zinc-950/80 px-4 py-2 text-sm backdrop-blur">
