@@ -7,6 +7,7 @@ on:
     paths:
       - "apps/server/**"
       - "packages/shared/**"
+      - "./github/workflows/deploy-server.yml"
 
 jobs:
   deploy:
@@ -19,7 +20,7 @@ jobs:
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
-            git config --global --add safe.directory /opt/fish
+            sudo git config --global --add safe.directory /opt/fish
             cd /opt/fish
             sudo git pull
-            sudo bash deploy/deploy.sh
+            sudo bash ./deploy/deploy.sh
