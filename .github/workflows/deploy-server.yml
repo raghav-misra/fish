@@ -20,4 +20,6 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
             git config --global --add safe.directory /opt/fish
-            sudo bash /opt/fish/deploy/deploy.sh
+            cd /opt/fish
+            sudo git pull
+            sudo bash deploy/deploy.sh
