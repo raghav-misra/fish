@@ -2,28 +2,14 @@
 
 > **Live:** [fish.raghavmisra.dev](https://fish.raghavmisra.dev)
 
-Online multiplayer Fish (Literature) — a 6-player team card game with real-time WebSocket gameplay.
+Online multiplayer Fish (Literature). 6 players, 2 teams, real-time via WebSockets.
 
 ## Stack
 
-| Layer | Tech |
-|-------|------|
-| Frontend | React 19, TypeScript, Vite, Tailwind v4, Zustand, Framer Motion |
-| Backend | Node 22, Fastify, Socket.IO |
-| Shared | Zod schemas + typed Socket.IO event contracts (`@fish/shared`) |
-| Infra | GCE VM (Debian), Caddy (auto-HTTPS), systemd, GitHub Actions CI |
-| Frontend hosting | Netlify (static deploy from `apps/web`) |
-| Voice/Video | **TODO** — planned via LiveKit or Daily |
-
-## Monorepo Structure
-
-```
-packages/shared/   — Card types, game logic types, socket event schemas
-apps/server/       — Fastify + Socket.IO game server
-apps/web/          — React SPA
-deploy/            — systemd unit, Caddyfile, deploy/setup scripts
-.github/workflows/ — CI: auto-deploy server on push to master
-```
+- **Frontend:** React + TypeScript + Vite
+- **Backend:** Node, Fastify, Socket.IO
+- **Infra:** GCE VM, Caddy (auto-HTTPS), systemd, GitHub Actions CI
+- **Frontend hosting:** Netlify
 
 ## Local Development
 
@@ -40,7 +26,7 @@ pnpm dev                                        # runs web + server in parallel
 ## Linting
 
 ```bash
-pnpm lint        # ESLint with typescript-eslint strict
+pnpm lint        # eslint strict
 pnpm typecheck   # tsc --noEmit across all packages
 ```
 
@@ -48,40 +34,24 @@ pnpm typecheck   # tsc --noEmit across all packages
 
 ### Server (GCE VM)
 
-#### First-time setup
-
+First-time setup:
 ```bash
 gcloud compute ssh fish-server --zone=us-central1-a
-# On the VM:
 sudo bash /opt/fish/deploy/setup.sh
 # Edit /opt/fish/apps/server/.env with your GAME_KEY, ADMIN_TOKEN, CORS_ORIGINS
 sudo systemctl restart fish-server
 ```
 
-#### Subsequent deploys
+Subsequent deploys are automatic via GitHub Actions on push to `master` (when `apps/server/` or `packages/shared/` change).
 
-Automatic via GitHub Actions on push to `master` (paths: `apps/server/**`, `packages/shared/**`).
-
-Or manually:
+Manual deploy:
 ```bash
 sudo bash /opt/fish/deploy/deploy.sh
 ```
 
-#### Runbook
-
-| Task | Command |
-|------|---------|
-| SSH into VM | `gcloud compute ssh fish-server --zone=us-central1-a` |
-| View server logs | `journalctl -u fish-server -f` |
-| Restart server | `sudo systemctl restart fish-server` |
-| View Caddy logs | `journalctl -u caddy -f` |
-| Deploy latest | `sudo bash /opt/fish/deploy/deploy.sh` |
-| Check server status | `systemctl status fish-server` |
-| Edit env vars | `sudo nano /opt/fish/apps/server/.env` |
-
 ### Frontend (Netlify)
 
-Auto-deploys on push to `master`. Environment variable:
+Auto-deploys on push to `master`. Set env var:
 - `VITE_SERVER_URL=https://fish-api.raghavmisra.dev`
 
 ## Environment Variables
@@ -101,8 +71,3 @@ Auto-deploys on push to `master`. Environment variable:
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `VITE_SERVER_URL` | Yes (prod) | Backend URL (default: http://localhost:3000) |
-
-## TODO
-
-- [ ] **Voice/Video chat** — LiveKit Cloud or Daily integration for in-game comms
-- [ ] Live game can withstand server dying (Redis?)
