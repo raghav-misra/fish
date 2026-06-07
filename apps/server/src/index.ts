@@ -25,6 +25,7 @@ import {
 } from "@fish/shared";
 import { config } from "./config.js";
 import { RoomManager, type Room } from "./rooms.js";
+import { connectStorage, saveRoom, deleteRoom, loadAllRooms } from "./storage/index.js";
 import {
   startGame,
   applyAsk,
@@ -60,6 +61,22 @@ const io = new SocketIOServer<
 
 const rooms = new RoomManager();
 
+// Connect to Redis and restore persisted rooms.
+await connectStorage();
+const restored = await loadAllRooms();
+rooms.restore(restored);
+fastify.log.info(`Restored ${restored.length} room(s) from Redis`);
+
+/** Persist room state to Redis (fire-and-forget). */
+function persist(room: Room) {
+  saveRoom(room).catch((err) => fastify.log.error(err, "Failed to persist room"));
+}
+
+/** Remove room from Redis. */
+function unpersist(roomId: string) {
+  deleteRoom(roomId).catch((err) => fastify.log.error(err, "Failed to delete room from Redis"));
+}
+
 // Gate: reject connections without a valid game key (when configured).
 if (config.gameKey) {
   io.use((socket, next) => {
@@ -74,6 +91,7 @@ function broadcastRoom(room: Room) {
   for (const [playerId, cards] of room.hands) {
     io.to(`player:${playerId}`).emit("game:hand", { cards });
   }
+  persist(room);
 }
 
 function emitLogs(room: Room, logs: GameLogEntry[]) {
@@ -117,6 +135,7 @@ async function revealAndClear(room: Room, success: boolean, logs: GameLogEntry[]
   broadcastAction(room);
   if (room.phase === "finished") {
     rooms.destroyRoom(room.id);
+    unpersist(room.id);
   }
 }
 
@@ -287,7 +306,11 @@ io.on("connection", (socket) => {
     if (!room || !socket.data.playerId) return;
     rooms.removePlayer(room, socket.data.playerId);
     void socket.leave(room.id);
-    if (rooms.getRoom(room.id)) broadcastRoom(room);
+    if (rooms.getRoom(room.id)) {
+      broadcastRoom(room);
+    } else {
+      unpersist(room.id);
+    }
   });
 
   socket.on("game:start", (raw) => {

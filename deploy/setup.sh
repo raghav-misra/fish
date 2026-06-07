@@ -6,9 +6,9 @@ set -e
 echo "=== Fish Server Setup ==="
 
 # 1. Install system dependencies
-echo "📦 Installing Node.js 22, Caddy, and git..."
+echo "📦 Installing Node.js 22, Caddy, Redis, and git..."
 curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
-apt-get install -y nodejs caddy git
+apt-get install -y nodejs caddy redis-server git
 corepack enable
 
 # 2. Clone repo (skip if already present)

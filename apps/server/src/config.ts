@@ -15,4 +15,5 @@ export const config = {
    * to connect. Leave empty/unset to disable the gate.
    */
   gameKey: process.env.GAME_KEY ?? "",
+  redisUrl: process.env.REDIS_URL ?? "redis://localhost:6379",
 };

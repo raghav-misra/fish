@@ -46,6 +46,13 @@ export interface Room {
 export class RoomManager {
   private rooms = new Map<string, Room>();
 
+  /** Restore rooms from persistence (call at startup). */
+  restore(rooms: Room[]): void {
+    for (const room of rooms) {
+      this.rooms.set(room.id, room);
+    }
+  }
+
   private newRoomId(): string {
     let id: string;
     do {
