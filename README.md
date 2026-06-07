@@ -8,6 +8,7 @@ Online multiplayer Fish (Literature). 6 players, 2 teams, real-time via WebSocke
 
 - **Frontend:** React + TypeScript + Vite
 - **Backend:** Node, Fastify, Socket.IO
+- **Persistence:** Redis (room state survives restarts)
 - **Infra:** GCE VM, Caddy (auto-HTTPS), systemd, GitHub Actions CI
 - **Frontend hosting:** Netlify
 
@@ -58,16 +59,13 @@ Auto-deploys on push to `master`. Set env var:
 
 ### Server (`apps/server/.env`)
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `PORT` | No | Server port (default: 3000) |
-| `HOST` | No | Bind address (default: 0.0.0.0) |
-| `CORS_ORIGINS` | Yes (prod) | Comma-separated allowed origins |
-| `ADMIN_TOKEN` | Yes (prod) | Secret for the admin testing API |
-| `GAME_KEY` | No | Site-wide access key (empty = no gate) |
+- `PORT` - Server port (default: 3000)
+- `HOST` - Bind address (default: 0.0.0.0)
+- `CORS_ORIGINS` - Comma-separated allowed origins (required in prod)
+- `ADMIN_TOKEN` - Secret for the admin testing API (required in prod)
+- `GAME_KEY` - Site-wide access key (empty = no gate)
+- `REDIS_URL` - Redis connection (default: redis://localhost:6379)
 
 ### Frontend (`apps/web/.env`)
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `VITE_SERVER_URL` | Yes (prod) | Backend URL (default: http://localhost:3000) |
+- `VITE_SERVER_URL` - Backend URL (default: http://localhost:3000)
