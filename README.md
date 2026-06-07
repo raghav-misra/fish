@@ -35,20 +35,14 @@ pnpm typecheck   # tsc --noEmit across all packages
 
 ### Server (GCE VM)
 
-First-time setup:
 ```bash
 gcloud compute ssh fish-server --zone=us-central1-a
-sudo bash /opt/fish/deploy/setup.sh
-# Edit /opt/fish/apps/server/.env with your GAME_KEY, ADMIN_TOKEN, CORS_ORIGINS
-sudo systemctl restart fish-server
-```
-
-Subsequent deploys are automatic via GitHub Actions on push to `master` (when `apps/server/` or `packages/shared/` change).
-
-Manual deploy:
-```bash
 sudo bash /opt/fish/deploy/deploy.sh
 ```
+
+On first run it installs Node, Caddy, Redis, and creates `.env` for you to edit. On subsequent runs it pulls, builds, syncs configs, and restarts the service.
+
+Auto-deploys via GitHub Actions on push to `master` (when `apps/server/` or `packages/shared/` change).
 
 ### Frontend (Netlify)
 
