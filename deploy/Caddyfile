@@ -1,18 +1,4 @@
-# Caddy reverse proxy for the Fish game server.
-#
-# Caddy fetches + renews Let's Encrypt TLS certs automatically — just point
-# api.yourdomain.com's DNS A record at the VM's external IP, then run Caddy.
-#
-# WebRTC / getUserMedia (camera + mic) require HTTPS, so TLS here is mandatory.
-
-api.yourdomain.com {
-	# Proxy everything (HTTP + WebSocket upgrades) to the Node server.
+fish-api.raghavmisra.dev {
 	reverse_proxy localhost:3000
-
 	encode gzip zstd
-
-	log {
-		output stdout
-		format console
-	}
 }

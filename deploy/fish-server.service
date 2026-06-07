@@ -13,9 +13,8 @@ After=network.target
 
 [Service]
 Type=simple
-# Adjust to wherever you clone the repo on the VM.
-WorkingDirectory=/opt/fish/apps/server
-ExecStart=/usr/bin/node dist/index.js
+WorkingDirectory=/opt/fish
+ExecStart=/opt/fish/node_modules/.bin/tsx apps/server/src/index.ts
 Restart=always
 RestartSec=3
 User=fish
