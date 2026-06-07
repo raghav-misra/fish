@@ -20,8 +20,4 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
             git config --global --add safe.directory /opt/fish
-            cd /opt/fish
-            sudo git pull
-            sudo pnpm install
-            sudo pnpm --filter @fish/shared build
-            sudo systemctl restart fish-server
+            sudo bash /opt/fish/deploy/deploy.sh

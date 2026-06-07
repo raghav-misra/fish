@@ -14,7 +14,7 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/opt/fish
-ExecStart=/opt/fish/node_modules/.bin/tsx apps/server/src/index.ts
+ExecStart=/usr/bin/node apps/server/dist/index.js
 Restart=always
 RestartSec=3
 User=fish

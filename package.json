@@ -14,9 +14,13 @@
     "dev:server": "pnpm --filter @fish/server dev",
     "build:shared": "pnpm --filter @fish/shared build",
     "admin": "pnpm --filter @fish/server admin",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint apps/server/src apps/web/src packages/shared/src"
   },
   "devDependencies": {
-    "typescript": "^5.6.2"
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.4.1",
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^8.60.1"
   }
 }

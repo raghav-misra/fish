@@ -94,7 +94,8 @@ export function startGame(room: Room): EngineResult {
   const deck = shuffle(freshDeck());
   for (const id of ids) room.hands.set(id, []);
   deck.forEach((card, i) => {
-    room.hands.get(ids[i % PLAYER_COUNT])!.push(card);
+    const hand = room.hands.get(ids[i % PLAYER_COUNT]);
+    if (hand) hand.push(card);
   });
 
   room.claims = new Map();

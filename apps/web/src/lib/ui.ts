@@ -7,7 +7,7 @@ export const SUIT_GLYPH: Record<Suit, string> = {
   spades: "♠",
 };
 
-export function isRedSuit(suit: Suit): boolean {
+function isRedSuit(suit: Suit): boolean {
   return suit === "hearts" || suit === "diamonds";
 }
 
@@ -20,12 +20,12 @@ export function cardFace(card: Card): { text: string; red: boolean } {
 }
 
 /** Tailwind accent classes: green = your team, red = their team. */
-export const TEAM_COLORS = {
+const TEAM_COLORS = {
   mine: { ring: "ring-emerald-400", text: "text-emerald-300", bg: "bg-emerald-500", dot: "bg-emerald-400" },
   theirs: { ring: "ring-rose-400", text: "text-rose-300", bg: "bg-rose-500", dot: "bg-rose-400" },
 } as const;
 
-export type TeamColors = { ring: string; text: string; bg: string; dot: string };
+type TeamColors = { ring: string; text: string; bg: string; dot: string };
 
 /**
  * Returns accent classes for a player/team relative to the local player.
